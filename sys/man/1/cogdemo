@@ -1,0 +1,69 @@
+.TH COGDEMO 1
+.SH NAME
+cogdemo \- Plan9Cog demonstration program
+.SH SYNOPSIS
+.B cogdemo
+[
+.B -a
+] [
+.B -p
+] [
+.B -e
+] [
+.B -s
+]
+.SH DESCRIPTION
+.I Cogdemo
+is a demonstration program that showcases the capabilities of Plan9Cog,
+the AGI-enabled Plan 9 operating system. It demonstrates AtomSpace operations,
+PLN inference, ECAN attention allocation, and system information.
+.PP
+With no options, all demonstrations are run in sequence. Options select
+specific demonstrations:
+.TP
+.B -a
+Run the AtomSpace demonstration showing node and link creation, truth values,
+and basic knowledge representation.
+.TP
+.B -p
+Run the PLN (Probabilistic Logic Networks) demonstration showing deduction,
+induction, abduction, revision, and boolean operations with uncertain reasoning.
+.TP
+.B -e
+Run the ECAN (Economic Attention Network) demonstration showing attention
+allocation, attentional focus, attention spreading, and decay.
+.TP
+.B -s
+Display Plan9Cog system information including version, uptime, atom count,
+and memory usage.
+.SH EXAMPLES
+Run all demonstrations:
+.IP
+.EX
+cogdemo
+.EE
+.PP
+Run only the AtomSpace demo:
+.IP
+.EX
+cogdemo -a
+.EE
+.PP
+Run PLN and ECAN demos:
+.IP
+.EX
+cogdemo -p -e
+.EE
+.SH FILES
+.TF /sys/include/plan9cog.h
+.TP
+.B /sys/include/plan9cog.h
+Plan9Cog main header
+.SH SOURCE
+.B /sys/src/cmd/cogdemo
+.SH SEE ALSO
+.IR cogctl (1),
+.IR cogfs (4),
+.IR plan9cog (2)
+.SH BUGS
+None known.

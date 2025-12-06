@@ -1,0 +1,182 @@
+#!/bin/rc
+# Plan9Cog integration test script
+
+fn fail {
+	echo FAIL: $*
+	exit 1
+}
+
+fn pass {
+	echo PASS: $*
+}
+
+echo '=== Plan9Cog Integration Tests ==='
+echo ''
+
+# Test 1: Check headers exist
+echo 'Test 1: Checking headers...'
+if(test -f /sys/include/plan9cog.h) {
+	pass 'Main header exists'
+} else {
+	fail 'Main header missing'
+}
+
+if(test -f /sys/include/plan9cog/atomspace.h) {
+	pass 'AtomSpace header exists'
+} else {
+	fail 'AtomSpace header missing'
+}
+
+if(test -f /sys/include/plan9cog/pln.h) {
+	pass 'PLN header exists'
+} else {
+	fail 'PLN header missing'
+}
+
+if(test -f /sys/include/plan9cog/cogvm.h) {
+	pass 'CogVM header exists'
+} else {
+	fail 'CogVM header missing'
+}
+
+echo ''
+
+# Test 2: Check library source exists
+echo 'Test 2: Checking library sources...'
+if(test -d /sys/src/libatomspace) {
+	pass 'libatomspace directory exists'
+} else {
+	fail 'libatomspace directory missing'
+}
+
+if(test -d /sys/src/libpln) {
+	pass 'libpln directory exists'
+} else {
+	fail 'libpln directory missing'
+}
+
+if(test -d /sys/src/libplan9cog) {
+	pass 'libplan9cog directory exists'
+} else {
+	fail 'libplan9cog directory missing'
+}
+
+echo ''
+
+# Test 3: Check command sources exist
+echo 'Test 3: Checking command sources...'
+if(test -d /sys/src/cmd/cogfs) {
+	pass 'cogfs command exists'
+} else {
+	fail 'cogfs command missing'
+}
+
+if(test -d /sys/src/cmd/cogctl) {
+	pass 'cogctl command exists'
+} else {
+	fail 'cogctl command missing'
+}
+
+if(test -d /sys/src/cmd/cogdemo) {
+	pass 'cogdemo command exists'
+} else {
+	fail 'cogdemo command missing'
+}
+
+echo ''
+
+# Test 4: Check documentation
+echo 'Test 4: Checking documentation...'
+if(test -f /PLAN9COG_GUIDE.md) {
+	pass 'Integration guide exists'
+} else {
+	fail 'Integration guide missing'
+}
+
+if(test -f /PLAN9COG_README.md) {
+	pass 'README exists'
+} else {
+	fail 'README missing'
+}
+
+echo ''
+
+# Test 5: Verify mkfiles
+echo 'Test 5: Checking mkfiles...'
+if(test -f /sys/src/libatomspace/mkfile) {
+	pass 'libatomspace mkfile exists'
+} else {
+	fail 'libatomspace mkfile missing'
+}
+
+if(test -f /sys/src/libpln/mkfile) {
+	pass 'libpln mkfile exists'
+} else {
+	fail 'libpln mkfile missing'
+}
+
+if(test -f /sys/src/libplan9cog/mkfile) {
+	pass 'libplan9cog mkfile exists'
+} else {
+	fail 'libplan9cog mkfile missing'
+}
+
+echo ''
+
+# Test 6: Check implementation files
+echo 'Test 6: Checking implementation files...'
+if(test -f /sys/src/libatomspace/atomspace.c) {
+	pass 'atomspace.c exists'
+} else {
+	fail 'atomspace.c missing'
+}
+
+if(test -f /sys/src/libatomspace/pattern.c) {
+	pass 'pattern.c exists'
+} else {
+	fail 'pattern.c missing'
+}
+
+if(test -f /sys/src/libpln/pln.c) {
+	pass 'pln.c exists'
+} else {
+	fail 'pln.c missing'
+}
+
+if(test -f /sys/src/libpln/ure.c) {
+	pass 'ure.c exists'
+} else {
+	fail 'ure.c missing'
+}
+
+if(test -f /sys/src/libplan9cog/plan9cog.c) {
+	pass 'plan9cog.c exists'
+} else {
+	fail 'plan9cog.c missing'
+}
+
+if(test -f /sys/src/libplan9cog/ecan.c) {
+	pass 'ecan.c exists'
+} else {
+	fail 'ecan.c missing'
+}
+
+if(test -f /sys/src/libplan9cog/machspace.c) {
+	pass 'machspace.c exists'
+} else {
+	fail 'machspace.c missing'
+}
+
+echo ''
+echo '=== All Tests Passed ==='
+echo ''
+echo 'Plan9Cog components are properly installed.'
+echo 'To build the libraries and commands, run:'
+echo '  cd /sys/src/libatomspace && mk install'
+echo '  cd /sys/src/libpln && mk install'
+echo '  cd /sys/src/libplan9cog && mk install'
+echo '  cd /sys/src/cmd/cogctl && mk install'
+echo '  cd /sys/src/cmd/cogfs && mk install'
+echo '  cd /sys/src/cmd/cogdemo && mk install'
+
+exit 0

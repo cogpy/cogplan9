@@ -1,0 +1,10 @@
+</$objtype/mkfile
+
+TARG=cogdemo
+OFILES=\
+	cogdemo.$O\
+
+HFILES=/sys/include/plan9cog.h
+
+BIN=/$objtype/bin
+

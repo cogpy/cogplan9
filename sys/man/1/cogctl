@@ -1,0 +1,86 @@
+.TH COGCTL 1
+.SH NAME
+cogctl \- cognitive system control utility
+.SH SYNOPSIS
+.B cogctl
+[
+.B -a
+.I atomspace
+]
+.I command
+[
+.I args ...
+]
+.SH DESCRIPTION
+.I Cogctl
+provides command-line access to Plan9Cog cognitive computing operations.
+It allows creating and managing atoms, running PLN inference, and controlling
+ECAN attention allocation.
+.PP
+The
+.B -a
+option specifies an AtomSpace file to load (not yet implemented).
+.PP
+The following commands are available:
+.TP
+.B atom create
+.I type name
+Create a new atom of the specified type with the given name.
+.TP
+.B atom list
+List all atoms in the AtomSpace.
+.TP
+.B atom info
+.I id
+Show detailed information about the atom with the specified ID.
+.TP
+.B pln stats
+Display PLN inference statistics.
+.TP
+.B ecan update
+Update the ECAN attention allocation network.
+.TP
+.B ecan focus
+Show the current attentional focus (top atoms by STI).
+.TP
+.B info
+Display Plan9Cog system information including version, uptime,
+atom count, and memory usage.
+.SH EXAMPLES
+Create a concept node:
+.IP
+.EX
+cogctl atom create 1 'concept:dog'
+.EE
+.PP
+List all atoms:
+.IP
+.EX
+cogctl atom list
+.EE
+.PP
+Show system information:
+.IP
+.EX
+cogctl info
+.EE
+.PP
+Update attention and show focus:
+.IP
+.EX
+cogctl ecan update
+cogctl ecan focus
+.EE
+.SH FILES
+.TF /sys/include/plan9cog.h
+.TP
+.B /sys/include/plan9cog.h
+Plan9Cog main header
+.SH SOURCE
+.B /sys/src/cmd/cogctl
+.SH SEE ALSO
+.IR cogfs (4),
+.IR cogdemo (1),
+.IR plan9cog (2)
+.SH BUGS
+AtomSpace file loading not yet implemented.

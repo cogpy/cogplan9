@@ -1,0 +1,194 @@
+.TH PLAN9COG 2
+.SH NAME
+atomspace, pln, ecan, machspace \- cognitive computing library
+.SH SYNOPSIS
+.B #include <u.h>
+.br
+.B #include <libc.h>
+.br
+.B #include <plan9cog.h>
+.PP
+.B Plan9Cog* plan9coginit(void)
+.PP
+.B void plan9cogfree(Plan9Cog *p9c)
+.PP
+.B AtomSpace* atomspacecreate(void)
+.PP
+.B Atom* atomcreate(AtomSpace *as, int type, char *name)
+.PP
+.B Atom* linkcreate(AtomSpace *as, int type, Atom **outgoing, int n)
+.PP
+.B TruthValue plndeduction(TruthValue a, TruthValue b)
+.PP
+.B EcanNetwork* ecaninit(AtomSpace *as, short totalsti, short totallti)
+.PP
+.I ... and many more (see DESCRIPTION)
+.SH DESCRIPTION
+The Plan9Cog library provides cognitive computing capabilities for Plan 9,
+including hypergraph knowledge representation (AtomSpace), uncertain reasoning
+(PLN), and attention allocation (ECAN).
+.SS AtomSpace
+The AtomSpace is a hypergraph database for representing knowledge:
+.TP
+.B atomspacecreate()
+Creates a new empty AtomSpace.
+.TP
+.B atomcreate(as, type, name)
+Creates a node atom with the specified type and name.
+Types include
+.BR ConceptNode ,
+.BR PredicateNode ,
+and others.
+.TP
+.B linkcreate(as, type, outgoing, n)
+Creates a link atom connecting
+.I n
+atoms from the
+.I outgoing
+array.
+Types include
+.BR InheritanceLink ,
+.BR SimilarityLink ,
+and others.
+.TP
+.B atomfind(as, id)
+Finds an atom by its unique identifier.
+.TP
+.B atomsettruth(a, tv)
+Sets the truth value of an atom.
+.TP
+.B atomgetattention(a)
+Gets the attention value of an atom.
+.SS PLN (Probabilistic Logic Networks)
+PLN provides uncertain reasoning over the AtomSpace:
+.TP
+.B plninit(as)
+Initializes a PLN inference engine.
+.TP
+.B plndeduction(a, b)
+Computes deduction: given A→B and B→C, infers A→C.
+.TP
+.B plninduction(a, b)
+Computes induction: given A→B, infers B→A with probability.
+.TP
+.B plnrevision(a, b)
+Combines evidence from multiple sources.
+.TP
+.B plnand(a, b)
+Computes probabilistic AND.
+.SS ECAN (Economic Attention Network)
+ECAN manages attention allocation across atoms:
+.TP
+.B ecaninit(as, totalsti, totallti)
+Initializes ECAN with total attention funds.
+.TP
+.B ecanupdate(ecan)
+Updates the attentional focus based on STI values.
+.TP
+.B ecanallocate(ecan, a, sti)
+Allocates STI to an atom.
+.TP
+.B ecanfocus(ecan, n)
+Returns the top
+.I n
+atoms in the attentional focus.
+.SS Truth Values
+Truth values represent probabilistic assessments:
+.IP
+.EX
+typedef struct TruthValue TruthValue;
+struct TruthValue {
+    float strength;     /* probability [0.0-1.0] */
+    float confidence;   /* confidence [0.0-1.0] */
+    ulong count;        /* evidence count */
+};
+.EE
+.SS Attention Values
+Attention values represent economic importance:
+.IP
+.EX
+typedef struct AttentionValue AttentionValue;
+struct AttentionValue {
+    short sti;          /* Short-Term Importance */
+    short lti;          /* Long-Term Importance */
+    short vlti;         /* Very Long-Term Importance */
+};
+.EE
+.SH EXAMPLES
+Create knowledge and perform reasoning:
+.IP
+.EX
+#include <u.h>
+#include <libc.h>
+#include <plan9cog.h>
+
+void
+main(void)
+{
+    Plan9Cog *p9c;
+    Atom *cat, *animal, *link;
+    Atom *outgoing[2];
+    TruthValue tv;
+
+    p9c = plan9coginit();
+    
+    cat = atomcreate(p9c->atomspace, ConceptNode, "cat");
+    animal = atomcreate(p9c->atomspace, ConceptNode, "animal");
+    
+    outgoing[0] = cat;
+    outgoing[1] = animal;
+    link = linkcreate(p9c->atomspace, InheritanceLink, outgoing, 2);
+    
+    tv.strength = 0.9;
+    tv.confidence = 0.8;
+    tv.count = 10;
+    atomsettruth(link, tv);
+    
+    print("Created: %s\\n", cogatomstr(link));
+    
+    plan9cogfree(p9c);
+    exits(nil);
+}
+.EE
+.SH FILES
+.TF /sys/src/libplan9cog
+.TP
+.B /sys/include/plan9cog.h
+Main header
+.TP
+.B /sys/include/plan9cog/atomspace.h
+AtomSpace API
+.TP
+.B /sys/include/plan9cog/pln.h
+PLN API
+.TP
+.B /sys/include/plan9cog/cogvm.h
+Cognitive VM
+.TP
+.B /sys/src/libatomspace
+AtomSpace library source
+.TP
+.B /sys/src/libpln
+PLN library source
+.TP
+.B /sys/src/libplan9cog
+Plan9Cog library source
+.SH SOURCE
+.B /sys/src/libplan9cog
+.SH SEE ALSO
+.IR cogctl (1),
+.IR cogfs (4),
+.IR cogdemo (1)
+.br
+OpenCog documentation at https://opencog.org
+.br
+"Probabilistic Logic Networks" by Ben Goertzel et al.
+.SH DIAGNOSTICS
+Functions return
+.B nil
+on error and set
+.IR errstr .
+.SH BUGS
+Pattern matching is O(n*m).
+AtomSpace find is O(n) linear search.
+Need hash table index for O(1) lookup.

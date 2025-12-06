@@ -1,0 +1,100 @@
+.TH COGFS 4
+.SH NAME
+cogfs \- cognitive file server
+.SH SYNOPSIS
+.B cogfs
+[
+.B -m
+.I mtpt
+] [
+.B -s
+.I srvname
+]
+.SH DESCRIPTION
+.I Cogfs
+is a file server that exposes Plan9Cog cognitive computing operations
+via the 9P protocol. It provides a file-based interface to the AtomSpace,
+PLN inference engine, and ECAN attention allocation network.
+.PP
+The
+.B -m
+option specifies the mount point (default:
+.BR /mnt/cog ).
+.PP
+The
+.B -s
+option specifies a service name for
+.IR srv (3)
+(default: none).
+.PP
+The file tree contains:
+.TF ecanctl
+.TP
+.B atoms
+Lists all atoms in the AtomSpace. Read-only.
+.TP
+.B atomctl
+Control file for atom operations. Write commands to create, delete, or modify atoms.
+.TP
+.B pln
+Shows PLN inference results. Read-only.
+.TP
+.B plnctl
+Control file for PLN inference. Write queries to perform inference.
+.TP
+.B ecan
+Shows ECAN state including attention allocation. Read-only.
+.TP
+.B ecanctl
+Control file for ECAN operations. Write commands to allocate or spread attention.
+.TP
+.B pattern
+Pattern matching results. Read-only.
+.TP
+.B stats
+System statistics including atom count, memory usage, and uptime. Read-only.
+.TP
+.B ctl
+General control file for system operations.
+.SH EXAMPLES
+Start the cognitive file server:
+.IP
+.EX
+cogfs -m /mnt/cog
+.EE
+.PP
+List atoms:
+.IP
+.EX
+cat /mnt/cog/atoms
+.EE
+.PP
+Create an atom:
+.IP
+.EX
+echo 'create 1 concept:cat' > /mnt/cog/atomctl
+.EE
+.PP
+Show system statistics:
+.IP
+.EX
+cat /mnt/cog/stats
+.EE
+.SH FILES
+.TF /sys/include/plan9cog.h
+.TP
+.B /mnt/cog
+Default mount point
+.TP
+.B /sys/include/plan9cog.h
+Plan9Cog main header
+.SH SOURCE
+.B /sys/src/cmd/cogfs
+.SH SEE ALSO
+.IR cogctl (1),
+.IR cogdemo (1),
+.IR plan9cog (2),
+.IR 9p (2)
+.SH BUGS
+The file server is single-threaded and may block on long operations.
+Pattern matching not yet exposed via files.
