@@ -1,0 +1,112 @@
+{
+  "name": "Plan9Cog Development",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".",
+    "args": {
+      "USERNAME": "vscode",
+      "USER_UID": "1000",
+      "USER_GID": "1000"
+    }
+  },
+
+  // Configure features to add
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "installOhMyZsh": true,
+      "upgradePackages": true,
+      "username": "vscode",
+      "uid": "1000",
+      "gid": "1000"
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest",
+      "ppa": true
+    }
+  },
+
+  // Set container-specific environment variables
+  "remoteEnv": {
+    "PLAN9": "/usr/local/plan9",
+    "PATH": "${containerEnv:PATH}:/usr/local/plan9/bin"
+  },
+
+  // Configure VS Code settings
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash",
+            "icon": "terminal-bash"
+          },
+          "rc": {
+            "path": "/usr/local/plan9/bin/rc",
+            "icon": "terminal"
+          }
+        },
+        "files.eol": "\n",
+        "files.insertFinalNewline": true,
+        "files.trimTrailingWhitespace": true,
+        "editor.tabSize": 8,
+        "editor.insertSpaces": false,
+        "editor.detectIndentation": false,
+        "[c]": {
+          "editor.tabSize": 8,
+          "editor.insertSpaces": false
+        },
+        "C_Cpp.default.cStandard": "c89",
+        "C_Cpp.default.cppStandard": "c++98",
+        "C_Cpp.default.intelliSenseMode": "linux-gcc-x64"
+      },
+      
+      // Extensions for Plan 9 development
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cpptools-extension-pack",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "GitHub.vscode-pull-request-github",
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        "streetsidesoftware.code-spell-checker",
+        "editorconfig.editorconfig",
+        "bierner.markdown-preview-github-styles",
+        "yzhang.markdown-all-in-one"
+      ]
+    }
+  },
+
+  // Forward ports for any services
+  "forwardPorts": [],
+
+  // Use 'postCreateCommand' to run commands after the container is created
+  "postCreateCommand": "bash -c 'echo \"Plan9Cog Development Environment Ready\" && echo \"Run ./test-plan9cog.sh to verify installation\"'",
+
+  // Use 'postStartCommand' to run commands every time the container starts
+  "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
+
+  // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root
+  "remoteUser": "vscode",
+
+  // Mount the workspace at /workspace
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "workspaceFolder": "/workspace",
+
+  // Container runtime options
+  "runArgs": [
+    "--cap-add=SYS_PTRACE",
+    "--security-opt",
+    "seccomp=unconfined"
+  ],
+
+  // Lifecycle scripts
+  "onCreateCommand": "echo 'Container created for Plan9Cog development'",
+  
+  // Mount additional volumes if needed
+  "mounts": [
+    "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached"
+  ]
+}

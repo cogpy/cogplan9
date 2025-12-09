@@ -1,0 +1,92 @@
+# Plan9Cog .gitignore
+
+# Build artifacts
+*.o
+*.8
+*.6
+*.5
+*.v
+*.q
+*.k
+*.a
+*.out
+y.tab.c
+y.tab.h
+y.debug
+y.output
+lex.yy.c
+
+# Plan 9 specific
+/*.8
+/*.6
+/*.5
+/*.v
+/*.q
+/*.k
+*/bin/*
+!/*/bin/.gitkeep
+
+# Editor artifacts
+*~
+*.swp
+*.swo
+.*.sw?
+.DS_Store
+._*
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.iml
+
+# OS files
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+*.err
+
+# Temporary files
+/tmp/
+*.tmp
+*.temp
+
+# Build directories (if using mk outside Plan 9)
+/build/
+/out/
+
+# Test output
+test-results/
+*.test
+
+# Container development artifacts
+.devcontainer/.devcontainer-cache/
+
+# Documentation build artifacts
+*.pdf
+*.ps
+*.dvi
+/doc/build/
+
+# Backup files
+*.bak
+*.orig
+*.rej
+
+# Core dumps
+core
+core.*
+*.core
+
+# Package managers (if any)
+node_modules/
+vendor/
+
+# Environment files
+.env
+.env.local

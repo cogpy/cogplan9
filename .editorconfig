@@ -1,0 +1,56 @@
+# EditorConfig for Plan9Cog
+# Plan 9 follows specific coding conventions
+
+root = true
+
+# Default for all files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Plan 9 C source files - TABS ONLY (8-character tabs)
+[*.{c,h}]
+indent_style = tab
+indent_size = 8
+tab_width = 8
+
+# Plan 9 mkfiles - tabs
+[mkfile]
+indent_style = tab
+indent_size = 8
+tab_width = 8
+
+# Plan 9 rc shell scripts - tabs
+[*.rc]
+indent_style = tab
+indent_size = 8
+tab_width = 8
+
+# Markdown documentation - spaces for readability
+[*.md]
+indent_style = space
+indent_size = 2
+max_line_length = 100
+
+# YAML files (GitHub Actions, devcontainer.json)
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# JSON files
+[*.json]
+indent_style = space
+indent_size = 2
+
+# Shell scripts (not rc)
+[*.sh]
+indent_style = space
+indent_size = 2
+
+# Makefiles (if any) - tabs
+[Makefile]
+indent_style = tab
+indent_size = 8
+tab_width = 8

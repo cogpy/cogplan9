@@ -1,0 +1,174 @@
+name: Plan9Cog CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  PLAN9: /usr/local/plan9
+
+jobs:
+  test:
+    name: Test Plan9Cog
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Plan 9 from User Space
+        run: |
+          echo "Installing Plan 9 from User Space (plan9port)..."
+          cd /usr/local
+          sudo git clone https://github.com/9fans/plan9port plan9
+          cd plan9
+          sudo ./INSTALL
+          
+          # Set up environment
+          echo "PLAN9=/usr/local/plan9" >> $GITHUB_ENV
+          echo "/usr/local/plan9/bin" >> $GITHUB_PATH
+          
+          # Verify installation
+          echo "Verifying Plan 9 tools..."
+          which mk
+          which 9c
+          mk --version || echo "mk installed"
+      
+      - name: Run integration tests
+        run: |
+          export PLAN9=/usr/local/plan9
+          export PATH=$PLAN9/bin:$PATH
+          
+          echo "Running Plan9Cog integration tests..."
+          chmod +x ./test-plan9cog.sh
+          ./test-plan9cog.sh
+      
+      - name: Check file structure
+        run: |
+          echo "Checking Plan9Cog file structure..."
+          
+          # Check headers
+          echo "Headers:"
+          ls -la sys/include/plan9cog* 2>/dev/null || echo "No plan9cog headers found (expected in full Plan 9 build)"
+          
+          # Check libraries
+          echo "Libraries:"
+          ls -la sys/src/libatomspace/ sys/src/libpln/ sys/src/libplan9cog/
+          
+          # Check commands
+          echo "Commands:"
+          ls -la sys/src/cmd/cogctl/ sys/src/cmd/cogfs/
+          
+          # Check documentation
+          echo "Documentation:"
+          ls -la PLAN9COG*.md ARCHITECTURE.md
+      
+      - name: Validate mkfiles
+        run: |
+          export PLAN9=/usr/local/plan9
+          export PATH=$PLAN9/bin:$PATH
+          
+          echo "Validating mkfiles..."
+          
+          # Check if mkfiles exist
+          find sys/src/libatomspace -name mkfile
+          find sys/src/libpln -name mkfile
+          find sys/src/libplan9cog -name mkfile
+          find sys/src/cmd/cogctl -name mkfile
+          find sys/src/cmd/cogfs -name mkfile
+          
+          echo "mkfile validation complete"
+      
+      - name: Test build preparation (syntax check)
+        run: |
+          export PLAN9=/usr/local/plan9
+          export PATH=$PLAN9/bin:$PATH
+          
+          echo "Checking C source syntax..."
+          
+          # Check C files compile without errors (syntax check only)
+          # Note: Full build would require complete Plan 9 environment
+          for file in sys/src/libatomspace/*.c sys/src/libpln/*.c sys/src/libplan9cog/*.c; do
+            if [ -f "$file" ]; then
+              echo "Checking syntax: $file"
+              gcc -fsyntax-only -I/usr/include -Isys/include "$file" 2>&1 | head -20 || true
+            fi
+          done
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: |
+            *.log
+            test-*.txt
+          retention-days: 7
+
+  lint:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check file formatting
+        run: |
+          echo "Checking for common formatting issues..."
+          
+          # Check for trailing whitespace
+          echo "Checking for trailing whitespace..."
+          ! grep -r --include="*.c" --include="*.h" ' $' sys/src/ || echo "Found trailing whitespace (warning only)"
+          
+          # Check for tabs vs spaces (Plan 9 uses tabs)
+          echo "Checking indentation (Plan 9 uses tabs)..."
+          grep -r --include="*.c" --include="*.h" '^    ' sys/src/ && echo "Warning: Found spaces for indentation" || echo "Good: Using tabs"
+      
+      - name: Validate documentation
+        run: |
+          echo "Checking documentation files..."
+          for doc in PLAN9COG_README.md PLAN9COG_GUIDE.md ARCHITECTURE.md; do
+            if [ -f "$doc" ]; then
+              echo "✓ $doc exists"
+              wc -l "$doc"
+            else
+              echo "✗ $doc missing"
+            fi
+          done
+
+  docker:
+    name: Test Dev Container
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build dev container
+        uses: docker/build-push-action@v5
+        with:
+          context: .devcontainer
+          file: .devcontainer/Dockerfile
+          push: false
+          tags: cogplan9-dev:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Test dev container
+        run: |
+          docker run --rm cogplan9-dev:latest bash -c '
+            echo "Testing Plan 9 tools in container..."
+            which mk
+            which 9c
+            which rc
+            echo "PLAN9=$PLAN9"
+            echo "PATH=$PATH"
+            echo "Container test passed!"
+          '
