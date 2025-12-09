@@ -1,5 +1,11 @@
+// This is a JSONC (JSON with Comments) version for documentation purposes
+// The actual devcontainer.json must be valid JSON without comments
+// 
+// DevContainer Configuration for Plan9Cog Development
 {
   "name": "Plan9Cog Development",
+  
+  // Build configuration - uses our custom Dockerfile
   "build": {
     "dockerfile": "Dockerfile",
     "context": ".",
@@ -9,6 +15,8 @@
       "USER_GID": "1000"
     }
   },
+  
+  // DevContainer features to add (common utilities and git)
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
@@ -23,12 +31,17 @@
       "ppa": true
     }
   },
+  
+  // Set container-specific environment variables for Plan 9
   "remoteEnv": {
     "PLAN9": "/usr/local/plan9",
     "PATH": "${containerEnv:PATH}:/usr/local/plan9/bin"
   },
+  
+  // VS Code customizations
   "customizations": {
     "vscode": {
+      // Editor settings optimized for Plan 9 development
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
         "terminal.integrated.profiles.linux": {
@@ -41,6 +54,7 @@
             "icon": "terminal"
           }
         },
+        // Plan 9 uses tabs, 8-character width
         "files.eol": "\n",
         "files.insertFinalNewline": true,
         "files.trimTrailingWhitespace": true,
@@ -51,38 +65,58 @@
           "editor.tabSize": 8,
           "editor.insertSpaces": false
         },
+        // C/C++ configuration
         "C_Cpp.default.cStandard": "c89",
         "C_Cpp.default.cppStandard": "c++98",
         "C_Cpp.default.intelliSenseMode": "linux-gcc-x64"
       },
+      
+      // Extensions for development
       "extensions": [
-        "ms-vscode.cpptools",
-        "ms-vscode.cpptools-extension-pack",
-        "GitHub.copilot",
-        "GitHub.copilot-chat",
-        "GitHub.vscode-pull-request-github",
-        "eamodio.gitlens",
-        "mhutchie.git-graph",
-        "streetsidesoftware.code-spell-checker",
-        "editorconfig.editorconfig",
-        "bierner.markdown-preview-github-styles",
-        "yzhang.markdown-all-in-one"
+        "ms-vscode.cpptools",              // C/C++ IntelliSense
+        "ms-vscode.cpptools-extension-pack", // C/C++ tools
+        "GitHub.copilot",                   // AI pair programmer
+        "GitHub.copilot-chat",              // Chat with Copilot
+        "GitHub.vscode-pull-request-github", // PR management
+        "eamodio.gitlens",                  // Git supercharged
+        "mhutchie.git-graph",               // Git graph visualization
+        "streetsidesoftware.code-spell-checker", // Spell checker
+        "editorconfig.editorconfig",        // EditorConfig support
+        "bierner.markdown-preview-github-styles", // MD preview
+        "yzhang.markdown-all-in-one"        // Markdown tools
       ]
     }
   },
+  
+  // Forward ports (none needed currently)
   "forwardPorts": [],
+  
+  // Commands to run after container creation
   "postCreateCommand": "bash -c 'echo \"Plan9Cog Development Environment Ready\" && echo \"Run ./test-plan9cog.sh to verify installation\"'",
+  
+  // Commands to run on container start
   "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
+  
+  // Run as non-root user for security
   "remoteUser": "vscode",
+  
+  // Workspace mount configuration
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
   "workspaceFolder": "/workspace",
+  
+  // Container runtime options for debugging
   "runArgs": [
-    "--cap-add=SYS_PTRACE",
+    "--cap-add=SYS_PTRACE",  // Allow ptrace for debugging
     "--security-opt",
-    "seccomp=unconfined"
+    "seccomp=unconfined"     // Allow debugging operations
   ],
+  
+  // Lifecycle hook
   "onCreateCommand": "echo 'Container created for Plan9Cog development'",
+  
+  // Additional volume mounts
   "mounts": [
+    // Mount local git config (optional, for user identity)
     "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached"
   ]
 }
