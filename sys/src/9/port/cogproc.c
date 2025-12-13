@@ -87,12 +87,19 @@ cogprocalloc(void)
 void
 cogprocfree(CogProcExt *ce)
 {
+	int i;
+
 	if(ce == nil)
 		return;
 
 	lock(&cogproclock);
-	/* Remove from array and free */
-	/* (simplified - production would properly remove from array) */
+	/* Remove from array */
+	for(i = 0; i < ncogprocs; i++) {
+		if(cogprocs[i] == ce) {
+			cogprocs[i] = nil;
+			break;
+		}
+	}
 	free(ce);
 	unlock(&cogproclock);
 }
@@ -101,12 +108,14 @@ cogprocfree(CogProcExt *ce)
 int
 cogpriority(CogProcExt *ce)
 {
+	int pri;
+
 	if(ce == nil)
 		return 0;
 	
 	/* Priority based on STI and cognitive state */
 	lock(ce);
-	int pri = ce->sti;
+	pri = ce->sti;
 	if(ce->cogstate == CogThinking)
 		pri += 10;
 	else if(ce->cogstate == CogReasoning)

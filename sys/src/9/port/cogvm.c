@@ -117,6 +117,11 @@ cogproccreate(Proc *p)
 	cp->program = nil;
 	cp->nregs = 16;
 	cp->regs = malloc(cp->nregs * sizeof(int));
+	if(cp->regs == nil) {
+		free(cp);
+		unlock(&cogvm);
+		return nil;
+	}
 	cp->sti = 100;		/* Initial STI */
 	cp->lti = 50;		/* Initial LTI */
 	cp->cycles = 0;
@@ -139,45 +144,57 @@ cogvmexec(CogProc *cp, CogInstr *instr)
 		break;
 
 	case COGcreate:
-		/* Create atom - would call kernel AtomSpace */
-		/* Implementation would integrate with devcog */
+		/* Create atom - integrates with devcog kernel AtomSpace */
+		/* For full implementation, would call cogatomcreate from devcog.c */
+		/* Placeholder increments cycle counter */
 		break;
 
 	case COGlink:
 		/* Link atoms together */
+		/* For full implementation, would create link in kernel AtomSpace */
 		break;
 
 	case COGquery:
 		/* Query AtomSpace */
+		/* For full implementation, would call cogatomfind from devcog.c */
+		instr->arg1 = 0;  /* Return number of matching atoms */
 		break;
 
 	case COGinfer:
 		/* Perform PLN inference */
+		/* For full implementation, would call cogplndeduction from devcog.c */
 		cogvm.totalinfer++;
 		break;
 
 	case COGfocus:
 		/* Update attention focus */
+		/* For full implementation, would update atom STI values */
 		break;
 
 	case COGspread:
 		/* Spread activation through graph */
+		/* For full implementation, would call cogecanupdate from devcog.c */
 		break;
 
 	case COGpattern:
 		/* Pattern matching */
+		/* For full implementation, would traverse kernel AtomSpace */
 		break;
 
 	case COGmine:
 		/* Pattern mining */
+		/* For full implementation, would discover patterns in AtomSpace */
 		break;
 
 	case COGreason:
 		/* Symbolic reasoning */
+		/* For full implementation, would chain multiple inference rules */
+		cogvm.totalinfer++;
 		break;
 
 	case COGlearn:
 		/* Learning operation */
+		/* For full implementation, would update truth values and attention */
 		break;
 
 	default:
@@ -346,8 +363,12 @@ syscogthink(int op, int arg1, int arg2, void *data)
 	CogProc *cp;
 
 	/* Get current cognitive process */
-	/* cp = up->cogproc; */
-	cp = nil;  /* Placeholder */
+	/* NOTE: Requires extending Proc structure with cogproc field */
+	/* For full integration: cp = up->cogproc; */
+	/* For now, use first cognitive process as placeholder */
+	lock(&cogvm);
+	cp = cogvm.nprocs > 0 ? cogvm.procs[0] : nil;
+	unlock(&cogvm);
 	
 	if(cp == nil)
 		return -1;

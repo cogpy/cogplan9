@@ -464,11 +464,17 @@ cogwrite(Chan *c, void *va, long n, vlong)
 			unlock(&cogkernel.vmstate);
 		}
 		else if(strcmp(cmd, "reset") == 0) {
+			int i;
 			qlock(&cogkernel.atomspace);
-			for(p = (char*)cogkernel.atomspace.atoms; 
-			    p < (char*)&cogkernel.atomspace.atoms[cogkernel.atomspace.natoms]; 
-			    p++)
-				;  /* Just iterate */
+			/* Free all atoms */
+			for(i = 0; i < cogkernel.atomspace.natoms; i++) {
+				if(cogkernel.atomspace.atoms[i]) {
+					if(cogkernel.atomspace.atoms[i]->outgoing)
+						free(cogkernel.atomspace.atoms[i]->outgoing);
+					free(cogkernel.atomspace.atoms[i]);
+					cogkernel.atomspace.atoms[i] = nil;
+				}
+			}
 			cogkernel.atomspace.natoms = 0;
 			cogkernel.atomspace.nextid = 1;
 			qunlock(&cogkernel.atomspace);
