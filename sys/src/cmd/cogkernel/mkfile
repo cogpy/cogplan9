@@ -1,0 +1,9 @@
+</$objtype/mkfile
+
+TARG=cogkernel
+OFILES=\
+	cogkernel.$O\
+
+HFILES=\
+
+BIN=/$objtype/bin
