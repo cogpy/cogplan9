@@ -1,0 +1,12 @@
+</$objtype/mkfile
+
+TARG=psifs
+OFILES=\
+	psifs.$O\
+
+HFILES=\
+	/$objtype/include/plan9cog/atomspace.h\
+	/$objtype/include/plan9cog/openpsi.h\
+
+<//$objtype/mkfile
+BIN=/$objtype/bin
