@@ -108,6 +108,7 @@ CogRule*
 cogureaddrule(char *name, int type, char *pattern)
 {
 	CogRule *r;
+	int i;
 	
 	if(rulereg == nil)
 		cogureinit();
@@ -115,7 +116,7 @@ cogureaddrule(char *name, int type, char *pattern)
 	qlock(rulereg);
 	
 	/* Check if rule already exists */
-	for(int i = 0; i < rulereg->nrules; i++){
+	for(i = 0; i < rulereg->nrules; i++){
 		if(strcmp(rulereg->rules[i]->name, name) == 0){
 			qunlock(rulereg);
 			return rulereg->rules[i];

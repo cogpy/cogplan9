@@ -338,6 +338,7 @@ cogprocwrite(Chan *c, void *va, long n, vlong offset)
 	char *buf, *fields[8];
 	int nfields, qid;
 	ulong atomid;
+	int i, j;  /* Declare at function scope for C89 */
 	
 	USED(offset);
 	
@@ -397,7 +398,6 @@ cogprocwrite(Chan *c, void *va, long n, vlong offset)
 				unlock(cs);
 			}
 			else if(strcmp(fields[0], "remove") == 0 || strcmp(fields[0], "del") == 0){
-				int i, j;
 				lock(cs);
 				for(i = 0; i < cs->ngoals; i++){
 					if(cs->goals[i] == atomid){
@@ -427,7 +427,6 @@ cogprocwrite(Chan *c, void *va, long n, vlong offset)
 				unlock(cs);
 			}
 			else if(strcmp(fields[0], "remove") == 0 || strcmp(fields[0], "del") == 0){
-				int i, j;
 				lock(cs);
 				for(i = 0; i < cs->nbeliefs; i++){
 					if(cs->beliefs[i] == atomid){
