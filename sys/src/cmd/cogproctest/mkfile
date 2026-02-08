@@ -1,0 +1,8 @@
+</$objtype/mkfile
+
+TARG=cogproctest
+OFILES=\
+	cogproctest.$O\
+
+<//$objtype/mkfile
+BIN=/$objtype/bin
