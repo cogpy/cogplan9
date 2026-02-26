@@ -13,6 +13,13 @@
  *
  * This makes cognitive processing a first-class OS primitive,
  * not an application layered on top of the kernel.
+ *
+ * Implementation Note:
+ *   This is an initial implementation that establishes the syscall
+ *   infrastructure and basic cognitive state management. Operation-
+ *   specific arguments are extracted but not fully utilized in this
+ *   phase. Future enhancements will add full operation dispatch to
+ *   the kernel AtomSpace, PLN inference engine, and ECAN system.
  */
 
 #include	"u.h"
@@ -30,12 +37,16 @@
  *
  * Arguments:
  *   op    - operation code (COGnop, COGcreate, COGlink, etc.)
- *   arg1  - first argument (operation-specific)
- *   arg2  - second argument (operation-specific)
- *   data  - operation data pointer
+ *   arg1  - first argument (reserved for future operation-specific use)
+ *   arg2  - second argument (reserved for future operation-specific use)
+ *   data  - operation data pointer (reserved for future use)
  *
  * Returns:
  *   0 on success, -1 on error
+ *
+ * Note: Arguments are extracted but cognitive state transitions are
+ * uniform in this phase. Full operation dispatch will be added in
+ * Phase 3 when kernel AtomSpace operations are implemented.
  */
 long
 syscogthink(ulong *arg)
@@ -51,6 +62,7 @@ syscogthink(ulong *arg)
 	arg2 = arg[2];
 	data = (void*)arg[3];
 
+	/* Reserved for future operation-specific handling */
 	USED(arg1);
 	USED(arg2);
 	USED(data);
@@ -60,7 +72,16 @@ syscogthink(ulong *arg)
 	if(ce == nil)
 		error("no cognitive extension");
 
-	/* Execute cognitive operation */
+	/*
+	 * Execute cognitive operation.
+	 * 
+	 * In this initial implementation, operations are dispatched to
+	 * cognitive state transition functions (cogthink, coginfer, coglearn).
+	 * This tracks cognitive cycles and updates process state.
+	 * 
+	 * Future phases will add operation-specific logic using arg1, arg2,
+	 * and data to interact with kernel AtomSpace, PLN, and ECAN.
+	 */
 	switch(op) {
 	case COGnop:
 		/* No operation */
@@ -68,51 +89,61 @@ syscogthink(ulong *arg)
 
 	case COGcreate:
 		/* Create atom in process's cognitive context */
+		/* TODO: Use arg1 as atom type, data as atom name */
 		cogthink(ce);
 		break;
 
 	case COGlink:
 		/* Link atoms */
+		/* TODO: Use arg1, arg2 as atom IDs, data as link type */
 		cogthink(ce);
 		break;
 
 	case COGquery:
 		/* Query AtomSpace */
+		/* TODO: Use arg1 as query type, data as query pattern */
 		cogthink(ce);
 		break;
 
 	case COGinfer:
 		/* Perform inference */
+		/* TODO: Use arg1 as rule type, arg2 as depth limit */
 		coginfer(ce);
 		break;
 
 	case COGfocus:
 		/* Update attention */
+		/* TODO: Use arg1 as atom ID to focus on */
 		cogthink(ce);
 		break;
 
 	case COGspread:
 		/* Spread activation */
+		/* TODO: Use arg1 as source atom, arg2 as spread amount */
 		cogthink(ce);
 		break;
 
 	case COGpattern:
 		/* Pattern match */
+		/* TODO: Use data as pattern specification */
 		cogthink(ce);
 		break;
 
 	case COGmine:
 		/* Pattern mining */
+		/* TODO: Use arg1 as minimum support threshold */
 		cogthink(ce);
 		break;
 
 	case COGreason:
 		/* Symbolic reasoning */
+		/* TODO: Use arg1 as reasoning strategy */
 		coginfer(ce);
 		break;
 
 	case COGlearn:
 		/* Learning operation */
+		/* TODO: Use arg1 as learning type, data as training info */
 		coglearn(ce);
 		break;
 
@@ -283,40 +314,4 @@ syscogspread(ulong *arg)
 	cogthink(ce);
 
 	return 1;	/* Simplified: one atom affected */
-}
-
-/*
- * Wrapper functions for systab interface
- *
- * These functions wrap the syscall implementations to match
- * the Syscall typedef expected by systab.
- */
-long
-sysrcogthink(ulong *arg)
-{
-	return syscogthink(arg);
-}
-
-long
-sysrcogwait(ulong *arg)
-{
-	return syscogwait(arg);
-}
-
-long
-sysrcoginfer(ulong *arg)
-{
-	return syscoginfer(arg);
-}
-
-long
-sysrcogfocus(ulong *arg)
-{
-	return syscogfocus(arg);
-}
-
-long
-sysrcogspread(ulong *arg)
-{
-	return syscogspread(arg);
 }
