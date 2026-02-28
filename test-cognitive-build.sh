@@ -51,6 +51,7 @@ COGNITIVE_FILES=(
     "$KERNEL_PORT/devcogproc.c"
     "$KERNEL_PORT/devcogure.c"
     "$KERNEL_PORT/devcoginf.c"
+    "$KERNEL_PORT/syscog.c"
     "$KERNEL_PORT/portdat.h"
     "$KERNEL_PORT/portfns.h"
     "$KERNEL_PC/main.c"
@@ -283,6 +284,72 @@ for file in "${COGNITIVE_FILES[@]}"; do
         check_syntax "$file"
     fi
 done
+
+echo ""
+echo "--- Checking syscog.c cognitive system calls ---"
+
+if [ -f "$KERNEL_PORT/syscog.c" ]; then
+    if grep -q "syscogthink" "$KERNEL_PORT/syscog.c"; then
+        log_pass "syscog.c: syscogthink function found"
+    else
+        log_fail "syscog.c: syscogthink function missing"
+    fi
+
+    if grep -q "syscogwait" "$KERNEL_PORT/syscog.c"; then
+        log_pass "syscog.c: syscogwait function found"
+    else
+        log_fail "syscog.c: syscogwait function missing"
+    fi
+
+    if grep -q "syscoginfer" "$KERNEL_PORT/syscog.c"; then
+        log_pass "syscog.c: syscoginfer function found"
+    else
+        log_fail "syscog.c: syscoginfer function missing"
+    fi
+
+    if grep -q "syscogfocus" "$KERNEL_PORT/syscog.c"; then
+        log_pass "syscog.c: syscogfocus function found"
+    else
+        log_fail "syscog.c: syscogfocus function missing"
+    fi
+
+    if grep -q "syscogspread" "$KERNEL_PORT/syscog.c"; then
+        log_pass "syscog.c: syscogspread function found"
+    else
+        log_fail "syscog.c: syscogspread function missing"
+    fi
+else
+    log_fail "syscog.c: File not found"
+fi
+
+echo ""
+echo "--- Checking systab.h syscall registration ---"
+
+if grep -q "COGTHINK" "$KERNEL_PORT/systab.h"; then
+    log_pass "systab.h: COGTHINK syscall registered"
+else
+    log_fail "systab.h: COGTHINK syscall not registered"
+fi
+
+if grep -q "syscogthink" "$KERNEL_PORT/systab.h"; then
+    log_pass "systab.h: syscogthink declaration found"
+else
+    log_fail "systab.h: syscogthink declaration missing"
+fi
+
+echo ""
+echo "--- Checking sys.h syscall numbers ---"
+
+LIBC_SYSH="sys/src/libc/9syscall/sys.h"
+if [ -f "$LIBC_SYSH" ]; then
+    if grep -q "COGTHINK" "$LIBC_SYSH"; then
+        log_pass "sys.h: Cognitive syscall numbers defined"
+    else
+        log_fail "sys.h: Cognitive syscall numbers missing"
+    fi
+else
+    log_fail "sys.h: File not found"
+fi
 
 echo ""
 echo "--- Checking CLAUDE.MD documentation ---"

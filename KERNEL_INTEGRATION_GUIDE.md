@@ -235,9 +235,11 @@ runproc(void)
 }
 ```
 
-## Step 5: System Call Integration
+## Step 5: System Call Integration ✅ COMPLETE
 
-### Add system call numbers in `/sys/src/9/port/portfns.h`
+**Note:** This step has been implemented. The cognitive system calls are now available in the kernel via `syscog.c`.
+
+### System call numbers in `/sys/src/libc/9syscall/sys.h`
 
 ```c
 /* Cognitive system calls */
@@ -248,52 +250,20 @@ runproc(void)
 #define COGSPREAD   94
 ```
 
-### Add system call implementations in `/sys/src/9/port/syscall.c`
+### System call implementations in `/sys/src/9/port/syscog.c`
+
+The cognitive system calls are implemented with the standard Plan 9 syscall interface:
 
 ```c
-/* System call handler */
-void*
-syscall(Ar0* ar0)
-{
-    // ... existing system calls ...
-    
-    case COGTHINK:
-        return (void*)syscogthink(
-            (int)ar0->a0,      /* op */
-            (int)ar0->a1,      /* arg1 */
-            (int)ar0->a2,      /* arg2 */
-            (void*)ar0->a3);   /* data */
-    
-    case COGWAIT:
-        return (void*)syscogwait();
-    
-    case COGINFER:
-        return (void*)syscoginfer(
-            (int)ar0->a0,      /* rule */
-            (ulong*)ar0->a1,   /* atoms */
-            (int)ar0->a2);     /* natoms */
-    
-    case COGFOCUS:
-        return (void*)syscogfocus((ulong)ar0->a0);
-    
-    case COGSPREAD:
-        return (void*)syscogspread(
-            (ulong)ar0->a0,    /* atomid */
-            (short)ar0->a1);   /* amount */
-    
-    // ... rest of system calls ...
-}
+/* Cognitive System Calls - implemented in syscog.c */
+long syscogthink(ulong *arg);   /* Perform cognitive operation */
+long syscogwait(ulong *arg);    /* Wait for cognitive event */
+long syscoginfer(ulong *arg);   /* Trigger inference */
+long syscogfocus(ulong *arg);   /* Set attentional focus */
+long syscogspread(ulong *arg);  /* Spread activation */
 ```
 
-Add libc wrappers in `/sys/src/libc/9syscall/sys.h`:
-
-```c
-#define COGTHINK    90
-#define COGWAIT     91
-#define COGINFER    92
-#define COGFOCUS    93
-#define COGSPREAD   94
-```
+These are registered in `systab.h` and callable from userspace.
 
 ## Step 6: Build Configuration
 
@@ -417,11 +387,11 @@ enum {
 
 - [ ] Modify `portdat.h` - Add cognitive types and Proc extensions
 - [ ] Modify `portfns.h` - Add function declarations
-- [ ] Update device table - Add cognitive device
-- [ ] Modify `main.c` - Add initialization
-- [ ] Modify `proc.c` - Add process extensions
-- [ ] Modify scheduler - Add cognitive priority
-- [ ] Add system calls - Implement cognitive syscalls
+- [x] Update device table - Add cognitive device
+- [x] Modify `main.c` - Add initialization
+- [x] Modify `proc.c` - Add process extensions
+- [x] Modify scheduler - Add cognitive priority
+- [x] Add system calls - Implement cognitive syscalls
 - [ ] Update mkfile - Add cognitive objects
 - [ ] Build kernel - Compile and link
 - [ ] Test device - Verify `#Σ/` works

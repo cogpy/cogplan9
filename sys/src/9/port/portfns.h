@@ -464,12 +464,12 @@ void		cogecandecay(float);
 CogAtom**	cogecanfocus(int*);
 void		cogecanstimulate(CogAtom*, short);
 
-/* Cognitive System Calls */
-int		syscogthink(int, int, int, void*);
-int		syscogwait(void);
-int		syscoginfer(int, ulong*, int);
-int		syscogfocus(ulong);
-int		syscogspread(ulong, short);
+/* Cognitive System Calls (systab interface) */
+long		syscogthink(ulong*);
+long		syscogwait(ulong*);
+long		syscoginfer(ulong*);
+long		syscogfocus(ulong*);
+long		syscogspread(ulong*);
 
 /* Tensor Logic Functions */
 void		cogtensorinit(void);
