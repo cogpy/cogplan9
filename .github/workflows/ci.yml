@@ -1,193 +1,54 @@
-name: Plan9Cog CI
+name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, develop ]
-  workflow_dispatch:
-
-env:
-  PLAN9: /home/runner/plan9
+    branches: [ main ]
 
 jobs:
-  test:
-    name: Test Plan9Cog
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Cache Plan 9 from User Space
-        uses: actions/cache@v4
-        id: cache-plan9port
-        with:
-          path: ~/plan9
-          key: plan9port-${{ runner.os }}-v2
-          restore-keys: |
-            plan9port-${{ runner.os }}-
-      
-      - name: Set up Plan 9 from User Space
-        if: steps.cache-plan9port.outputs.cache-hit != 'true'
-        run: |
-          echo "Installing Plan 9 from User Space (plan9port)..."
-          cd ~
-          git clone https://github.com/9fans/plan9port plan9
-          cd plan9
-          ./INSTALL
-      
-      - name: Configure environment
-        run: |
-          # Set up environment
-          echo "PLAN9=$HOME/plan9" >> $GITHUB_ENV
-          echo "$HOME/plan9/bin" >> $GITHUB_PATH
-          
-          # Verify installation
-          echo "Verifying Plan 9 tools..."
-          ls -la ~/plan9/bin/ | head -20
-          which mk || echo "mk not found"
-          which 9c || echo "9c not found"
-      
-      - name: Run integration tests
-        run: |
-          export PLAN9=$HOME/plan9
-          export PATH=$PLAN9/bin:$PATH
-          
-          echo "Running Plan9Cog integration tests..."
-          chmod +x ./test-plan9cog.sh
-          ./test-plan9cog.sh
-      
-      - name: Check file structure
-        run: |
-          echo "Checking Plan9Cog file structure..."
-          
-          # Check headers
-          echo "Headers:"
-          ls -la sys/include/plan9cog* 2>/dev/null || echo "No plan9cog headers found (expected in full Plan 9 build)"
-          
-          # Check libraries
-          echo "Libraries:"
-          ls -la sys/src/libatomspace/ sys/src/libpln/ sys/src/libplan9cog/
-          
-          # Check commands
-          echo "Commands:"
-          ls -la sys/src/cmd/cogctl/ sys/src/cmd/cogfs/
-          
-          # Check documentation
-          echo "Documentation:"
-          ls -la PLAN9COG*.md ARCHITECTURE.md
-      
-      - name: Validate mkfiles
-        run: |
-          export PLAN9=$HOME/plan9
-          export PATH=$PLAN9/bin:$PATH
-          
-          echo "Validating mkfiles..."
-          
-          # Check if mkfiles exist
-          find sys/src/libatomspace -name mkfile
-          find sys/src/libpln -name mkfile
-          find sys/src/libplan9cog -name mkfile
-          find sys/src/cmd/cogctl -name mkfile
-          find sys/src/cmd/cogfs -name mkfile
-          
-          echo "mkfile validation complete"
-      
-      - name: Test build preparation (syntax check)
-        run: |
-          export PLAN9=$HOME/plan9
-          export PATH=$PLAN9/bin:$PATH
-          
-          echo "Checking C source syntax..."
-          
-          # Install X11 development headers for syntax check
-          sudo apt-get update && sudo apt-get install -y libx11-dev
-          
-          # Check C files compile without errors (syntax check only)
-          # Note: Full build would require complete Plan 9 environment
-          # These files use Plan 9 specific headers (u.h, libc.h) which are not
-          # available in standard Linux, so we skip strict syntax checking
-          echo "Listing source files for verification:"
-          for file in sys/src/libatomspace/*.c sys/src/libpln/*.c sys/src/libplan9cog/*.c; do
-            if [ -f "$file" ]; then
-              echo "Found: $file"
-            fi
-          done
-          echo "Source files verified."
-      
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: |
-            *.log
-            test-*.txt
-          retention-days: 7
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
 
-  lint:
-    name: Lint and Format Check
-    runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Check file formatting
-        run: |
-          echo "Checking for common formatting issues..."
-          
-          # Check for trailing whitespace
-          echo "Checking for trailing whitespace..."
-          ! grep -r --include="*.c" --include="*.h" ' $' sys/src/ || echo "Found trailing whitespace (warning only)"
-          
-          # Check for tabs vs spaces (Plan 9 uses tabs)
-          echo "Checking indentation (Plan 9 uses tabs)..."
-          grep -r --include="*.c" --include="*.h" '^    ' sys/src/ && echo "Warning: Found spaces for indentation" || echo "Good: Using tabs"
-      
-      - name: Validate documentation
-        run: |
-          echo "Checking documentation files..."
-          for doc in PLAN9COG_README.md PLAN9COG_GUIDE.md ARCHITECTURE.md; do
-            if [ -f "$doc" ]; then
-              echo "✓ $doc exists"
-              wc -l "$doc"
-            else
-              echo "✗ $doc missing"
-            fi
-          done
+    - uses: actions/checkout@v3
 
-  docker:
-    name: Test Dev Container
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      
-      - name: Build dev container
-        uses: docker/build-push-action@v5
-        with:
-          context: .devcontainer
-          file: .devcontainer/Dockerfile
-          push: false
-          load: true
-          tags: cogplan9-dev:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-      
-      - name: Test dev container
-        run: |
-          docker run --rm cogplan9-dev:latest bash -c '
-            echo "Testing Plan 9 tools in container..."
-            which mk
-            which 9c
-            which rc
-            echo "PLAN9=$PLAN9"
-            echo "PATH=$PATH"
-            echo "Container test passed!"
-          '
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake
+
+    - name: Install dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install cmake
+
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Run Unit Tests
+      run: |
+        ./build/tests/unit/test_atomspace
+        ./build/tests/unit/test_pln
+
+    - name: Run API Tests
+      run: ./build/tests/api/test_plan9cog_api
+
+    - name: Run CLI Tests
+      run: |
+        chmod +x tests/cli/test_cogctl.sh
+        chmod +x tests/cli/test_cogfs.sh
+        ./tests/cli/test_cogctl.sh
+        ./tests/cli/test_cogfs.sh
+
+    - name: Run E2E Tests
+      run: |
+        chmod +x tests/e2e/test_full_workflow.sh
+        ./tests/e2e/test_full_workflow.sh
