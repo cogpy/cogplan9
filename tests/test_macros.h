@@ -33,13 +33,10 @@ static int pass_count = 0;
     } while (0)
 
 #define TEST_SUMMARY() \
-    printf("\n--- Summary ---\n"); \
-    printf("Total tests: %d\n", test_count); \
-    printf("Passed: %d\n", pass_count); \
-    printf("Failed: %d\n", test_count - pass_count); \
-    if (test_count != pass_count) { \
-        return 1; \
-    } \
-    return 0;
+    (printf("\n--- Summary ---\n"), \
+     printf("Total tests: %d\n", test_count), \
+     printf("Passed: %d\n", pass_count), \
+     printf("Failed: %d\n", test_count - pass_count), \
+     (test_count != pass_count ? 1 : 0))
 
 #endif // TEST_MACROS_H

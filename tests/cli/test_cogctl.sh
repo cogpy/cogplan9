@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Mock cogctl for testing purposes
-cat > /tmp/cogctl <<EOF
+cat > /tmp/cogctl <<'EOF'
 #!/bin/sh
 echo "cogctl mock: Recieved command: $@" >> /tmp/cogctl.log
 if [ "$1" = "get" ] && [ "$2" = "atomspace-stats" ]; then

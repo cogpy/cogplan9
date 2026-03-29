@@ -1,4 +1,4 @@
-_#include "../test_macros.h"
+#include "../test_macros.h"
 #include <plan9cog/pln.h>
 
 void test_pln_truth_value() {
