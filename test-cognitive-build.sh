@@ -304,8 +304,111 @@ if [ -f "CLAUDE.MD" ]; then
     else
         log_warn "CLAUDE.MD: Tensor logic not mentioned"
     fi
+
+    if grep -q "Phase 2D" CLAUDE.MD; then
+        log_pass "CLAUDE.MD: Phase 2D documented"
+    else
+        log_warn "CLAUDE.MD: Phase 2D not documented"
+    fi
 else
     log_fail "CLAUDE.MD does not exist"
+fi
+
+echo ""
+echo "--- Checking Phase 2D: Cognitive System Calls ---"
+
+SYSCALL_H="sys/src/libc/9syscall/sys.h"
+SYSPROC="sys/src/9/port/sysproc.c"
+SYSTAB="sys/src/9/port/systab.h"
+
+if grep -q "COGTHINK" "$SYSCALL_H"; then
+    log_pass "$SYSCALL_H: COGTHINK syscall number defined"
+else
+    log_fail "$SYSCALL_H: COGTHINK syscall number missing"
+fi
+
+if grep -q "COGWAIT" "$SYSCALL_H"; then
+    log_pass "$SYSCALL_H: COGWAIT syscall number defined"
+else
+    log_fail "$SYSCALL_H: COGWAIT syscall number missing"
+fi
+
+if grep -q "COGINFER" "$SYSCALL_H"; then
+    log_pass "$SYSCALL_H: COGINFER syscall number defined"
+else
+    log_fail "$SYSCALL_H: COGINFER syscall number missing"
+fi
+
+if grep -q "COGFOCUS" "$SYSCALL_H"; then
+    log_pass "$SYSCALL_H: COGFOCUS syscall number defined"
+else
+    log_fail "$SYSCALL_H: COGFOCUS syscall number missing"
+fi
+
+if grep -q "COGSPREAD" "$SYSCALL_H"; then
+    log_pass "$SYSCALL_H: COGSPREAD syscall number defined"
+else
+    log_fail "$SYSCALL_H: COGSPREAD syscall number missing"
+fi
+
+if grep -q "sys_cogthink" "$SYSPROC"; then
+    log_pass "$SYSPROC: sys_cogthink handler found"
+else
+    log_fail "$SYSPROC: sys_cogthink handler missing"
+fi
+
+if grep -q "sys_cogwait" "$SYSPROC"; then
+    log_pass "$SYSPROC: sys_cogwait handler found"
+else
+    log_fail "$SYSPROC: sys_cogwait handler missing"
+fi
+
+if grep -q "sys_coginfer" "$SYSPROC"; then
+    log_pass "$SYSPROC: sys_coginfer handler found"
+else
+    log_fail "$SYSPROC: sys_coginfer handler missing"
+fi
+
+if grep -q "sys_cogfocus" "$SYSPROC"; then
+    log_pass "$SYSPROC: sys_cogfocus handler found"
+else
+    log_fail "$SYSPROC: sys_cogfocus handler missing"
+fi
+
+if grep -q "sys_cogspread" "$SYSPROC"; then
+    log_pass "$SYSPROC: sys_cogspread handler found"
+else
+    log_fail "$SYSPROC: sys_cogspread handler missing"
+fi
+
+if grep -q "sys_cogthink" "$SYSTAB"; then
+    log_pass "$SYSTAB: sys_cogthink registered in systab"
+else
+    log_fail "$SYSTAB: sys_cogthink not registered in systab"
+fi
+
+if grep -q "COGTHINK" "$SYSTAB"; then
+    log_pass "$SYSTAB: COGTHINK entry in dispatch table"
+else
+    log_fail "$SYSTAB: COGTHINK entry missing from dispatch table"
+fi
+
+if grep -q "syscoginfer" "$KERNEL_PORT/cogvm.c"; then
+    log_pass "cogvm.c: syscoginfer implementation found"
+else
+    log_fail "cogvm.c: syscoginfer implementation missing"
+fi
+
+if grep -q "syscogfocus" "$KERNEL_PORT/cogvm.c"; then
+    log_pass "cogvm.c: syscogfocus implementation found"
+else
+    log_fail "cogvm.c: syscogfocus implementation missing"
+fi
+
+if grep -q "syscogspread" "$KERNEL_PORT/cogvm.c"; then
+    log_pass "cogvm.c: syscogspread implementation found"
+else
+    log_fail "cogvm.c: syscogspread implementation missing"
 fi
 
 echo ""

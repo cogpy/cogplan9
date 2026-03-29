@@ -55,6 +55,11 @@ Syscall syspwrite;
 Syscall systsemacquire;
 Syscall sysnsec;
 Syscall	sysdeath;
+Syscall	sys_cogthink;
+Syscall	sys_cogwait;
+Syscall	sys_coginfer;
+Syscall	sys_cogfocus;
+Syscall	sys_cogspread;
 
 Syscall *systab[]={
 	[SYSR1]		sysr1,
@@ -109,6 +114,11 @@ Syscall *systab[]={
 	[PWRITE]	syspwrite,
 	[TSEMACQUIRE]	systsemacquire,
 	[NSEC]		sysnsec,
+	[COGTHINK]	sys_cogthink,
+	[COGWAIT]	sys_cogwait,
+	[COGINFER]	sys_coginfer,
+	[COGFOCUS]	sys_cogfocus,
+	[COGSPREAD]	sys_cogspread,
 };
 
 char *sysctab[]={
@@ -164,6 +174,11 @@ char *sysctab[]={
 	[PWRITE]	"Pwrite",
 	[TSEMACQUIRE]	"Tsemacquire",
 	[NSEC]		"Nsec",
+	[COGTHINK]	"Cogthink",
+	[COGWAIT]	"Cogwait",
+	[COGINFER]	"Coginfer",
+	[COGFOCUS]	"Cogfocus",
+	[COGSPREAD]	"Cogspread",
 };
 
 int nsyscall = (sizeof systab/sizeof systab[0]);

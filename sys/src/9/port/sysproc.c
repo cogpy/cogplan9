@@ -1142,3 +1142,49 @@ sysnsec(ulong *arg)
 
 	return 0;
 }
+
+/*
+ * Cognitive system call handlers (Phase 2D)
+ * These wrap the internal cognitive kernel functions for user-space access.
+ */
+
+long
+sys_cogthink(ulong *arg)
+{
+	return syscogthink((int)arg[0], (int)arg[1], (int)arg[2], (void*)arg[3]);
+}
+
+long
+sys_cogwait(ulong *arg)
+{
+	USED(arg);
+	return syscogwait();
+}
+
+long
+sys_coginfer(ulong *arg)
+{
+	int rule, natoms;
+	ulong *atoms;
+
+	rule = (int)arg[0];
+	atoms = (ulong*)arg[1];
+	natoms = (int)arg[2];
+
+	if(atoms != nil && natoms > 0 && natoms <= MAXINFERATOMS)
+		validaddr((ulong)atoms, natoms * sizeof(ulong), 0);
+
+	return syscoginfer(rule, atoms, natoms);
+}
+
+long
+sys_cogfocus(ulong *arg)
+{
+	return syscogfocus((ulong)arg[0]);
+}
+
+long
+sys_cogspread(ulong *arg)
+{
+	return syscogspread((ulong)arg[0], (short)arg[1]);
+}

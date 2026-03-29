@@ -1149,6 +1149,13 @@ enum
 	COGSPREAD = 94,		/* Spread activation */
 };
 
+/* Cognitive system call limits and defaults */
+enum
+{
+	MAXINFERATOMS	= 16,	/* Maximum atoms per PLN inference call */
+	FOCUSSTIAMOUNT	= 100,	/* Default STI boost when focusing on an atom */
+};
+
 /* Cognitive VM opcodes */
 enum
 {
