@@ -400,3 +400,59 @@ syscogwait(void)
 	/* This would integrate with rendezvous/sleep */
 	return 0;
 }
+
+/* Cognitive inference syscall - Perform PLN inference */
+int
+syscoginfer(int rule, ulong *atoms, int natoms)
+{
+	CogAtom *results[MAXINFERATOMS];
+	CogAtom **inputs;
+	int i, nresults;
+
+	if(atoms == nil || natoms <= 0 || natoms > MAXINFERATOMS)
+		return -1;
+
+	inputs = smalloc(natoms * sizeof(CogAtom*));
+	if(inputs == nil)
+		return -1;
+
+	for(i = 0; i < natoms; i++){
+		inputs[i] = cogfind(atoms[i]);
+		if(inputs[i] == nil){
+			free(inputs);
+			return -1;
+		}
+	}
+
+	nresults = cogplninfer(rule, inputs, natoms, results);
+	free(inputs);
+	return nresults;
+}
+
+/* Cognitive focus syscall - Set attentional focus on an atom */
+int
+syscogfocus(ulong atomid)
+{
+	CogAtom *a;
+
+	a = cogfind(atomid);
+	if(a == nil)
+		return -1;
+
+	cogecanstimulate(a, FOCUSSTIAMOUNT);
+	return 0;
+}
+
+/* Cognitive spread syscall - Spread activation from an atom */
+int
+syscogspread(ulong atomid, short amount)
+{
+	CogAtom *a;
+
+	a = cogfind(atomid);
+	if(a == nil)
+		return -1;
+
+	cogecanspread(a, amount);
+	return 0;
+}

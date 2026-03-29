@@ -193,9 +193,13 @@ struct AttentionValue {
 
 ### Next Phase: System Calls & Validation
 
-#### Phase 2D: System Calls (Priority: Medium)
-- Add cognitive system call handlers to `syscall.c`
-- Implement `COGTHINK`, `COGWAIT`, `COGINFER`, `COGFOCUS`, `COGSPREAD`
+- **Phase 2D: System Calls** (COMPLETE)
+  - sys.h: Added COGTHINK=90, COGWAIT=91, COGINFER=92, COGFOCUS=93, COGSPREAD=94 syscall numbers
+  - cogvm.c: Implemented syscoginfer, syscogfocus, syscogspread kernel helpers
+  - sysproc.c: Added sys_cogthink, sys_cogwait, sys_coginfer, sys_cogfocus, sys_cogspread handlers
+  - systab.h: Registered all 5 cognitive syscalls in dispatch table and name table
+
+### Next Phase: Full Validation
 
 #### Phase 2E: Full Validation (Priority: High)
 - Kernel boot testing
