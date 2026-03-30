@@ -55,3 +55,10 @@
 #define	COGINFER	92
 #define	COGFOCUS	93
 #define	COGSPREAD	94
+
+/* Cognitive system calls */
+#define COGTHINK	90
+#define COGWAIT		91
+#define COGINFER	92
+#define COGFOCUS	93
+#define COGSPREAD	94

@@ -21,6 +21,9 @@
 #include <plan9cog/atomspace.h>		/* Hypergraph knowledge representation */
 #include <plan9cog/pln.h>		/* Probabilistic Logic Networks */
 #include <plan9cog/cogvm.h>		/* Cognitive VM extensions */
+#include <plan9cog/tensorlogic.h>	/* Tensor Logic reasoning */
+#include <plan9cog/openpsi.h>		/* OpenPsi goal-directed behavior */
+#include <plan9cog/temporal.h>		/* Temporal reasoning */
 
 /* Plan9Cog System */
 typedef struct Plan9Cog Plan9Cog;
@@ -79,8 +82,14 @@ struct MachSpace {
 MachSpace*	machspaceinit(AtomSpace *local);
 void		machspacefree(MachSpace *ms);
 int		machspaceconnect(MachSpace *ms, char *host);
+int		machspace9pconnect(MachSpace *ms, char *addr);
+int		machspace9pdisconnect(MachSpace *ms, char *host);
 Atom*		machspacefind(MachSpace *ms, ulong id);
+Atom*		machspacecreate(MachSpace *ms, int type, char *name);
+Atom*		machspacelink(MachSpace *ms, int type, Atom **outgoing, int n);
+Atom**		machspacequery(MachSpace *ms, AtomPredicate pred, void *arg, int *n);
 int		machspacesync(MachSpace *ms);
+char**		machspacenodes(MachSpace *ms, int *n);
 
 /* Cognitive Grip - universal object handling mechanism */
 enum {

@@ -9,23 +9,156 @@
 
 static ulong nextatomid = 1;
 
+/* Hash table for O(1) atom lookup */
+#define HASH_SIZE 1024
+
+typedef struct HashEntry HashEntry;
+struct HashEntry {
+	ulong id;
+	Atom *atom;
+	HashEntry *next;
+};
+
+typedef struct AtomHash AtomHash;
+struct AtomHash {
+	HashEntry *buckets[HASH_SIZE];
+};
+
+static AtomHash *globalhash;
+
+/* Hash function for atom IDs */
+static int
+hashid(ulong id)
+{
+	return (int)(id % HASH_SIZE);
+}
+
+/* Initialize hash table */
+static AtomHash*
+hashinit(void)
+{
+	AtomHash *h;
+	int i;
+
+	h = mallocz(sizeof(AtomHash), 1);
+	if(h == nil)
+		return nil;
+
+	for(i = 0; i < HASH_SIZE; i++)
+		h->buckets[i] = nil;
+
+	return h;
+}
+
+/* Insert atom into hash table */
+static void
+hashinsert(AtomHash *h, Atom *a)
+{
+	HashEntry *e;
+	int bucket;
+
+	if(h == nil || a == nil)
+		return;
+
+	bucket = hashid(a->id);
+
+	e = mallocz(sizeof(HashEntry), 1);
+	if(e == nil)
+		return;
+
+	e->id = a->id;
+	e->atom = a;
+	e->next = h->buckets[bucket];
+	h->buckets[bucket] = e;
+}
+
+/* Find atom in hash table - O(1) average case */
+static Atom*
+hashfind(AtomHash *h, ulong id)
+{
+	HashEntry *e;
+	int bucket;
+
+	if(h == nil)
+		return nil;
+
+	bucket = hashid(id);
+
+	for(e = h->buckets[bucket]; e != nil; e = e->next){
+		if(e->id == id)
+			return e->atom;
+	}
+
+	return nil;
+}
+
+/* Remove atom from hash table */
+static void
+hashremove(AtomHash *h, ulong id)
+{
+	HashEntry *e, *prev;
+	int bucket;
+
+	if(h == nil)
+		return;
+
+	bucket = hashid(id);
+	prev = nil;
+
+	for(e = h->buckets[bucket]; e != nil; prev = e, e = e->next){
+		if(e->id == id){
+			if(prev == nil)
+				h->buckets[bucket] = e->next;
+			else
+				prev->next = e->next;
+			free(e);
+			return;
+		}
+	}
+}
+
+/* Free hash table */
+static void
+hashfree(AtomHash *h)
+{
+	HashEntry *e, *next;
+	int i;
+
+	if(h == nil)
+		return;
+
+	for(i = 0; i < HASH_SIZE; i++){
+		for(e = h->buckets[i]; e != nil; e = next){
+			next = e->next;
+			free(e);
+		}
+	}
+
+	free(h);
+}
+
 AtomSpace*
 atomspacecreate(void)
 {
 	AtomSpace *as;
-	
+
 	as = mallocz(sizeof(AtomSpace), 1);
 	if(as == nil)
 		return nil;
-	
+
 	as->maxatoms = 1024;
 	as->atoms = mallocz(sizeof(Atom*) * as->maxatoms, 1);
 	if(as->atoms == nil){
 		free(as);
 		return nil;
 	}
-	
+
 	as->natoms = 0;
+
+	/* Initialize hash table */
+	if(globalhash == nil)
+		globalhash = hashinit();
+
 	return as;
 }
 
@@ -33,20 +166,24 @@ void
 atomspacefree(AtomSpace *as)
 {
 	int i;
-	
+
 	if(as == nil)
 		return;
-	
+
 	lock(as);
 	for(i = 0; i < as->natoms; i++){
 		if(as->atoms[i]){
+			/* Remove from hash table */
+			if(globalhash != nil)
+				hashremove(globalhash, as->atoms[i]->id);
+
 			free(as->atoms[i]->name);
 			free(as->atoms[i]->outgoing);
 			free(as->atoms[i]);
 		}
 	}
 	unlock(as);
-	
+
 	free(as->atoms);
 	free(as);
 }
@@ -56,13 +193,13 @@ atomalloc(AtomSpace *as)
 {
 	Atom *a;
 	Atom **newatoms;
-	
+
 	a = mallocz(sizeof(Atom), 1);
 	if(a == nil)
 		return nil;
-	
+
 	lock(as);
-	
+
 	/* Expand atom array if needed */
 	if(as->natoms >= as->maxatoms){
 		as->maxatoms *= 2;
@@ -74,10 +211,14 @@ atomalloc(AtomSpace *as)
 		}
 		as->atoms = newatoms;
 	}
-	
+
 	a->id = nextatomid++;
 	as->atoms[as->natoms++] = a;
-	
+
+	/* Insert into hash table for O(1) lookup */
+	if(globalhash != nil)
+		hashinsert(globalhash, a);
+
 	unlock(as);
 	return a;
 }
@@ -151,11 +292,18 @@ linkcreate(AtomSpace *as, int type, Atom **outgoing, int n)
 Atom*
 atomfind(AtomSpace *as, ulong id)
 {
-	int i;
 	Atom *a;
-	
+
+	/* Use hash table for O(1) lookup */
+	if(globalhash != nil){
+		a = hashfind(globalhash, id);
+		if(a != nil)
+			return a;
+	}
+
+	/* Fallback to linear search */
 	lock(as);
-	for(i = 0; i < as->natoms; i++){
+	for(int i = 0; i < as->natoms; i++){
 		a = as->atoms[i];
 		if(a && a->id == id){
 			unlock(as);
@@ -171,7 +319,11 @@ atomdelete(AtomSpace *as, ulong id)
 {
 	int i;
 	Atom *a;
-	
+
+	/* Remove from hash table */
+	if(globalhash != nil)
+		hashremove(globalhash, id);
+
 	lock(as);
 	for(i = 0; i < as->natoms; i++){
 		a = as->atoms[i];

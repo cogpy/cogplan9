@@ -198,6 +198,12 @@ struct AttentionValue {
   - cogvm.c: Implemented syscoginfer, syscogfocus, syscogspread kernel helpers
   - sysproc.c: Added sys_cogthink, sys_cogwait, sys_coginfer, sys_cogfocus, sys_cogspread handlers
   - systab.h: Registered all 5 cognitive syscalls in dispatch table and name table
+  - test-cognitive-build.sh: Build validation script (76 tests, all passing)
+- **Phase 2D: System Calls** (COMPLETE)
+  - syscog.c: Cognitive system call implementations
+  - systab.h: Registered COGTHINK, COGWAIT, COGINFER, COGFOCUS, COGSPREAD
+  - sys.h: Added cognitive syscall numbers (90-94)
+  - portfns.h: Updated syscall function declarations
 
 ### Next Phase: Full Validation
 

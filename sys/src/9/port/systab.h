@@ -61,6 +61,13 @@ Syscall	sys_coginfer;
 Syscall	sys_cogfocus;
 Syscall	sys_cogspread;
 
+/* Cognitive system calls */
+Syscall syscogthink;
+Syscall syscogwait;
+Syscall syscoginfer;
+Syscall syscogfocus;
+Syscall syscogspread;
+
 Syscall *systab[]={
 	[SYSR1]		sysr1,
 	[_ERRSTR]	sys_errstr,
@@ -119,6 +126,12 @@ Syscall *systab[]={
 	[COGINFER]	sys_coginfer,
 	[COGFOCUS]	sys_cogfocus,
 	[COGSPREAD]	sys_cogspread,
+	/* Cognitive system calls */
+	[COGTHINK]	syscogthink,
+	[COGWAIT]	syscogwait,
+	[COGINFER]	syscoginfer,
+	[COGFOCUS]	syscogfocus,
+	[COGSPREAD]	syscogspread,
 };
 
 char *sysctab[]={
@@ -174,6 +187,7 @@ char *sysctab[]={
 	[PWRITE]	"Pwrite",
 	[TSEMACQUIRE]	"Tsemacquire",
 	[NSEC]		"Nsec",
+	/* Cognitive system calls */
 	[COGTHINK]	"Cogthink",
 	[COGWAIT]	"Cogwait",
 	[COGINFER]	"Coginfer",

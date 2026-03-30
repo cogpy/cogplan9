@@ -180,54 +180,245 @@ plneval(PlnInference *pln, Atom *query)
 	return atomgettruth(query);
 }
 
-/* Forward chaining (simplified) */
+/* PLN inference statistics - internal tracking */
+static PlnStats plnglobalstats;
+
+/* Find matching links by type and pattern */
+static Atom**
+plnfindlinks(AtomSpace *as, int linktype, int *nresults)
+{
+	Atom **results;
+	int i, count, maxresults;
+	Atom *a;
+
+	maxresults = 128;
+	results = mallocz(sizeof(Atom*) * maxresults, 1);
+	if(results == nil){
+		*nresults = 0;
+		return nil;
+	}
+
+	count = 0;
+	lock(as);
+	for(i = 0; i < as->natoms; i++){
+		a = as->atoms[i];
+		if(a && a->type == linktype && a->outgoing != nil){
+			if(count >= maxresults){
+				maxresults *= 2;
+				results = realloc(results, sizeof(Atom*) * maxresults);
+				if(results == nil){
+					unlock(as);
+					*nresults = 0;
+					return nil;
+				}
+			}
+			results[count++] = a;
+		}
+	}
+	unlock(as);
+
+	*nresults = count;
+	return results;
+}
+
+/* Check if atom matches target or is connected to target */
+static int
+plnrelatesto(Atom *a, Atom *target)
+{
+	int i;
+
+	if(a == target)
+		return 1;
+
+	if(a->outgoing == nil)
+		return 0;
+
+	for(i = 0; i < a->noutgoing; i++){
+		if(a->outgoing[i] == target)
+			return 1;
+	}
+
+	return 0;
+}
+
+/* Apply deduction rule: A->B, B->C => A->C */
+static Atom*
+plnapplydeduction(PlnInference *pln, Atom *ab, Atom *bc)
+{
+	Atom *result;
+	Atom *outgoing[2];
+	TruthValue tv;
+
+	if(ab == nil || bc == nil)
+		return nil;
+
+	if(ab->noutgoing < 2 || bc->noutgoing < 2)
+		return nil;
+
+	/* Check if B matches: ab->outgoing[1] == bc->outgoing[0] */
+	if(ab->outgoing[1] != bc->outgoing[0])
+		return nil;
+
+	/* Create A->C link */
+	outgoing[0] = ab->outgoing[0];  /* A */
+	outgoing[1] = bc->outgoing[1];  /* C */
+
+	result = linkcreate(pln->as, ab->type, outgoing, 2);
+	if(result == nil)
+		return nil;
+
+	/* Compute truth value using deduction formula */
+	tv = plndeduction(atomgettruth(ab), atomgettruth(bc));
+	atomsettruth(result, tv);
+
+	plnglobalstats.tvcompute++;
+
+	return result;
+}
+
+/* Forward chaining - apply rules to generate new atoms */
 Atom**
 plnforward(PlnInference *pln, Atom *target, int maxsteps, int *n)
 {
 	Atom **results;
-	int step;
-	
-	results = mallocz(sizeof(Atom*) * maxsteps, 1);
+	Atom **links;
+	int nlinks, i, j, step, count;
+	Atom *newatom;
+	int maxresults;
+
+	maxresults = maxsteps * 2;
+	results = mallocz(sizeof(Atom*) * maxresults, 1);
 	if(results == nil){
 		*n = 0;
 		return nil;
 	}
-	
-	/* Simplified forward chaining */
-	for(step = 0; step < maxsteps; step++){
-		/* TODO: Apply rules and generate new atoms */
+
+	count = 0;
+
+	/* Get all inheritance/implication links */
+	links = plnfindlinks(pln->as, InheritanceLink, &nlinks);
+	if(links == nil){
+		*n = 0;
+		return results;
 	}
-	
-	*n = 0;
+
+	/* Forward chaining: apply deduction rules */
+	for(step = 0; step < maxsteps && count < maxresults; step++){
+		plnglobalstats.forward++;
+
+		/* Try all pairs of links */
+		for(i = 0; i < nlinks && count < maxresults; i++){
+			for(j = 0; j < nlinks && count < maxresults; j++){
+				if(i == j)
+					continue;
+
+				/* Only process links related to target */
+				if(target != nil && !plnrelatesto(links[i], target))
+					continue;
+
+				newatom = plnapplydeduction(pln, links[i], links[j]);
+				if(newatom != nil){
+					results[count++] = newatom;
+					plnglobalstats.inferences++;
+					plnglobalstats.rulematch++;
+				}
+			}
+		}
+
+		/* If no progress, break */
+		if(count == 0)
+			break;
+	}
+
+	free(links);
+	*n = count;
 	return results;
 }
 
-/* Backward chaining (simplified) */
+/* Backward chaining - prove goal by finding premises */
 Atom**
 plnbackward(PlnInference *pln, Atom *goal, int maxsteps, int *n)
 {
 	Atom **results;
-	
-	results = mallocz(sizeof(Atom*) * maxsteps, 1);
+	Atom **links;
+	int nlinks, i, step, count;
+	int maxresults;
+
+	maxresults = maxsteps * 2;
+	results = mallocz(sizeof(Atom*) * maxresults, 1);
 	if(results == nil){
 		*n = 0;
 		return nil;
 	}
-	
-	/* Simplified backward chaining */
-	*n = 0;
+
+	count = 0;
+
+	if(goal == nil){
+		*n = 0;
+		return results;
+	}
+
+	/* Get all links */
+	links = plnfindlinks(pln->as, InheritanceLink, &nlinks);
+	if(links == nil){
+		links = plnfindlinks(pln->as, ImplicationLink, &nlinks);
+	}
+
+	if(links == nil){
+		*n = 0;
+		return results;
+	}
+
+	/* Backward chaining: find links that conclude to goal */
+	for(step = 0; step < maxsteps && count < maxresults; step++){
+		plnglobalstats.backward++;
+
+		for(i = 0; i < nlinks && count < maxresults; i++){
+			/* Check if this link concludes to goal */
+			if(links[i]->noutgoing >= 2 && links[i]->outgoing[1] == goal){
+				/* This link concludes to goal - add premise */
+				results[count++] = links[i]->outgoing[0];
+				plnglobalstats.inferences++;
+
+				/* Recursively find premises for this node */
+				if(step + 1 < maxsteps){
+					int j;
+					for(j = 0; j < nlinks && count < maxresults; j++){
+						if(links[j]->noutgoing >= 2 &&
+						   links[j]->outgoing[1] == links[i]->outgoing[0]){
+							results[count++] = links[j]->outgoing[0];
+							plnglobalstats.inferences++;
+						}
+					}
+				}
+			}
+		}
+
+		/* If no progress, break */
+		if(count == 0)
+			break;
+	}
+
+	free(links);
+	*n = count;
 	return results;
 }
 
 void
 plnstats(PlnInference *pln, PlnStats *stats)
 {
-	memset(stats, 0, sizeof(PlnStats));
-	/* TODO: Collect statistics */
+	if(stats == nil)
+		return;
+
+	lock(pln);
+	*stats = plnglobalstats;
+	unlock(pln);
 }
 
 void
 plnresetstats(PlnInference *pln)
 {
-	/* TODO: Reset statistics */
+	lock(pln);
+	memset(&plnglobalstats, 0, sizeof(PlnStats));
+	unlock(pln);
 }

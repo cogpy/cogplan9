@@ -1,0 +1,15 @@
+</$objtype/mkfile
+
+LIB=libtensorlogic.a
+OFILES=\
+	tensor.$O\
+	einsum.$O\
+	nonlinear.$O\
+	logic.$O\
+	embedding.$O\
+	kernel.$O\
+	graphmodel.$O\
+	plnintegration.$O\
+
+HFILES=/sys/include/plan9cog/tensorlogic.h
+

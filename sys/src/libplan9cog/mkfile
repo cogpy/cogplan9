@@ -6,6 +6,12 @@ OFILES=\
 	ecan.$O\
 	machspace.$O\
 	reactor.$O\
+	patternmine.$O\
+	openpsi.$O\
+	temporal.$O\
 
-HFILES=/sys/include/plan9cog.h
+HFILES=\
+	/sys/include/plan9cog.h\
+	/sys/include/plan9cog/openpsi.h\
+	/sys/include/plan9cog/temporal.h\
 
