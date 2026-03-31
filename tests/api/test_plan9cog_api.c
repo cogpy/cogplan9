@@ -1,5 +1,6 @@
 #include "../test_macros.h"
 #include <plan9cog/plan9cog.h>
+#include <stdlib.h>
 
 void test_api_initialization() {
     TEST_CASE("API Initialization");
