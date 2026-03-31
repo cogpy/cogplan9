@@ -205,6 +205,17 @@ struct AttentionValue {
   - sys.h: Added cognitive syscall numbers (90-94)
   - portfns.h: Updated syscall function declarations
 
+### Sprint 5: Temporal Reasoning (COMPLETE)
+- **temporalfs** (COMPLETE)
+  - sys/src/libplan9cog/temporal.c: Time-aware AtomSpace (777 lines)
+  - sys/include/plan9cog/temporal.h: Temporal types and API
+  - sys/src/cmd/temporalfs/temporalfs.c: 9P temporal file server
+  - sys/src/cmd/temporalfs/mkfile: Build file
+  - /mnt/temporal/ hierarchy: now, history, changed, snap/, ctl, stats
+  - Allen's 13 interval relations for temporal reasoning
+  - Named snapshot management: create, restore, delete, list
+  - test-cognitive-build.sh: Build validation script (110 tests, all passing)
+
 ### Next Phase: Full Validation
 
 #### Phase 2E: Full Validation (Priority: High)

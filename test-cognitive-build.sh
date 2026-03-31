@@ -482,6 +482,128 @@ else
 fi
 
 echo ""
+echo "--- Checking Sprint 5: Temporal Reasoning ---"
+
+TEMPORAL_LIB="sys/src/libplan9cog/temporal.c"
+TEMPORAL_H="sys/include/plan9cog/temporal.h"
+TEMPORAL_FS="sys/src/cmd/temporalfs/temporalfs.c"
+TEMPORAL_MK="sys/src/cmd/temporalfs/mkfile"
+
+if [ -f "$TEMPORAL_LIB" ]; then
+    log_pass "temporal.c: library found"
+else
+    log_fail "temporal.c: library missing"
+fi
+
+if [ -f "$TEMPORAL_H" ]; then
+    log_pass "temporal.h: header found"
+else
+    log_fail "temporal.h: header missing"
+fi
+
+if [ -f "$TEMPORAL_FS" ]; then
+    log_pass "temporalfs.c: file server found"
+else
+    log_fail "temporalfs.c: file server missing"
+fi
+
+if [ -f "$TEMPORAL_MK" ]; then
+    log_pass "temporalfs/mkfile: build file found"
+else
+    log_fail "temporalfs/mkfile: build file missing"
+fi
+
+if [ -f "$TEMPORAL_LIB" ]; then
+    if grep -q "temporalinit" "$TEMPORAL_LIB"; then
+        log_pass "temporal.c: temporalinit function found"
+    else
+        log_fail "temporal.c: temporalinit function missing"
+    fi
+
+    if grep -q "temporalsnap" "$TEMPORAL_LIB"; then
+        log_pass "temporal.c: temporalsnap function found"
+    else
+        log_fail "temporal.c: temporalsnap function missing"
+    fi
+
+    if grep -q "temporalfindat" "$TEMPORAL_LIB"; then
+        log_pass "temporal.c: temporalfindat function found"
+    else
+        log_fail "temporal.c: temporalfindat function missing"
+    fi
+
+    if grep -q "temporalrelation" "$TEMPORAL_LIB"; then
+        log_pass "temporal.c: temporalrelation (Allen's intervals) found"
+    else
+        log_fail "temporal.c: temporalrelation missing"
+    fi
+
+    if grep -q "temporalprune" "$TEMPORAL_LIB"; then
+        log_pass "temporal.c: temporalprune function found"
+    else
+        log_fail "temporal.c: temporalprune function missing"
+    fi
+fi
+
+if [ -f "$TEMPORAL_H" ]; then
+    if grep -q "TemporalSpace" "$TEMPORAL_H"; then
+        log_pass "temporal.h: TemporalSpace struct found"
+    else
+        log_fail "temporal.h: TemporalSpace struct missing"
+    fi
+
+    if grep -q "TemporalAtom" "$TEMPORAL_H"; then
+        log_pass "temporal.h: TemporalAtom struct found"
+    else
+        log_fail "temporal.h: TemporalAtom struct missing"
+    fi
+
+    if grep -q "Snapshot" "$TEMPORAL_H"; then
+        log_pass "temporal.h: Snapshot struct found"
+    else
+        log_fail "temporal.h: Snapshot struct missing"
+    fi
+
+    if grep -q "RelBefore" "$TEMPORAL_H"; then
+        log_pass "temporal.h: Allen's interval relations found"
+    else
+        log_fail "temporal.h: Allen's interval relations missing"
+    fi
+fi
+
+if [ -f "$TEMPORAL_FS" ]; then
+    if grep -q "temporalinit" "$TEMPORAL_FS"; then
+        log_pass "temporalfs.c: uses temporalinit"
+    else
+        log_fail "temporalfs.c: temporalinit not used"
+    fi
+
+    if grep -q "temporalsnap" "$TEMPORAL_FS"; then
+        log_pass "temporalfs.c: snapshot support found"
+    else
+        log_fail "temporalfs.c: snapshot support missing"
+    fi
+
+    if grep -q "temporalchanged" "$TEMPORAL_FS"; then
+        log_pass "temporalfs.c: changed-atoms query found"
+    else
+        log_fail "temporalfs.c: changed-atoms query missing"
+    fi
+
+    if grep -q "writectl" "$TEMPORAL_FS"; then
+        log_pass "temporalfs.c: control interface found"
+    else
+        log_fail "temporalfs.c: control interface missing"
+    fi
+
+    if grep -q "threadmain" "$TEMPORAL_FS"; then
+        log_pass "temporalfs.c: 9P server entry point found"
+    else
+        log_fail "temporalfs.c: 9P server entry point missing"
+    fi
+fi
+
+echo ""
 echo "=== Build Test Summary ==="
 echo -e "Passed: ${GREEN}$PASS_COUNT${NC}"
 echo -e "Failed: ${RED}$FAIL_COUNT${NC}"

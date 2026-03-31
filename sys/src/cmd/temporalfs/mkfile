@@ -1,0 +1,12 @@
+</$objtype/mkfile
+
+TARG=temporalfs
+OFILES=\
+	temporalfs.$O\
+
+HFILES=\
+	/$objtype/include/plan9cog/atomspace.h\
+	/$objtype/include/plan9cog/temporal.h\
+
+<//$objtype/mkfile
+BIN=/$objtype/bin

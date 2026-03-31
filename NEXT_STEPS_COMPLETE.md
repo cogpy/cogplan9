@@ -4,7 +4,7 @@
 
 **ALL ROADMAP SPRINTS COMPLETED ✅**
 
-This document summarizes the complete implementation of Plan9Cog ROADMAP.md across all 4 sprints, delivering a revolutionary cognitive operating system architecture.
+This document summarizes the complete implementation of Plan9Cog ROADMAP.md across all 5 sprints, delivering a revolutionary cognitive operating system architecture.
 
 ## Implementation Status
 
@@ -36,6 +36,17 @@ This document summarizes the complete implementation of Plan9Cog ROADMAP.md acro
 - [x] Default urges (curiosity, competence, certainty)
 - [x] 5 modulators (arousal, valence, resolution, selection, securing)
 - [x] Integration with process cognitive state
+
+### Sprint 5: Temporal Reasoning ✅ COMPLETE
+- [x] Temporal library (libplan9cog/temporal.c - 777 lines)
+- [x] Temporal header (plan9cog/temporal.h)
+- [x] Temporal file server (cmd/temporalfs/temporalfs.c)
+- [x] /mnt/temporal/ hierarchy (now, history, changed, snap/, ctl, stats)
+- [x] Allen's interval relations (13 temporal relations)
+- [x] Named snapshot management (create, restore, delete, list)
+- [x] Time-travel queries (atoms at any past time)
+- [x] History pruning with configurable retention
+- [x] 18 new tests added (110 total, all passing)
 
 ## Deliverables
 
@@ -69,6 +80,7 @@ This document summarizes the complete implementation of Plan9Cog ROADMAP.md acro
 ### File Servers (sys/src/cmd/)
 - cogfs/cogfs.c - Cognitive file server
 - **NEW** psifs/psifs.c (550 lines) - OpenPsi file server
+- **NEW** temporalfs/temporalfs.c - Temporal reasoning file server
 
 ### Test Programs (sys/src/cmd/)
 - cogkernel/cogkernel.c (318 lines) - Kernel tests
