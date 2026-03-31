@@ -72,6 +72,29 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: .\build\tests\api\Debug\test_plan9cog_api.exe
 
+    - name: Run Integration Tests (Unix)
+      if: matrix.os != 'windows-latest'
+      run: ./build/tests/integration/test_integration
+
+    - name: Run Integration Tests (Windows)
+      if: matrix.os == 'windows-latest'
+      run: .\build\tests\integration\Debug\test_integration.exe
+
+    - name: Run Phase 2E Shell Integration Tests
+      if: matrix.os != 'windows-latest'
+      run: |
+        chmod +x tests/integration/run_integration_tests.sh
+        chmod +x tests/integration/test_coginfo_stats.sh
+        chmod +x tests/integration/test_atomspace_persistence.sh
+        chmod +x tests/integration/test_pln_stats.sh
+        chmod +x tests/integration/test_benchmark.sh
+        ./tests/integration/run_integration_tests.sh
+
+    - name: Run Phase 2E Shell Integration Tests (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: bash
+      run: bash tests/integration/run_integration_tests.sh
+
     - name: Run CLI Tests
       if: matrix.os != 'windows-latest'
       run: |

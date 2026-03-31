@@ -61,6 +61,9 @@ add_c_test(unit test_stress)
 # ── API tests ─────────────────────────────────────────────────────────────────
 add_c_test(api test_plan9cog_api)
 
+# ── Integration tests (Phase 2E: Full Validation) ─────────────────────────────
+add_c_test(integration test_integration)
+
 # ── C++ header-only test (legacy) ─────────────────────────────────────────────
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test/test_all.cpp)
     add_executable(test_all test/test_all.cpp)
