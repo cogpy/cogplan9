@@ -216,12 +216,23 @@ struct AttentionValue {
   - Named snapshot management: create, restore, delete, list
   - test-cognitive-build.sh: Build validation script (110 tests, all passing)
 
-### Next Phase: Full Validation
-
-#### Phase 2E: Full Validation (Priority: High)
-- Kernel boot testing
-- Performance benchmarking
-- Integration testing
+### **Phase 2E: Full Validation (COMPLETE)**
+- **C Integration Tests** (COMPLETE)
+  - tests/integration/test_integration.c: Cross-module integration test (240 lines)
+  - 9 test groups: lifecycle, idempotency, multiple cycles, AtomSpace+PLN pipeline,
+    statistics accuracy, version string, execute_atomese, PLN formula accuracy,
+    atomspace query integration
+  - CMakeLists.txt: Registered test_integration target
+- **Shell Integration Tests wired into CI** (COMPLETE)
+  - tests/integration/test_coginfo_stats.sh: Statistics accuracy (12 tests)
+  - tests/integration/test_atomspace_persistence.sh: Export/import roundtrip (12 tests)
+  - tests/integration/test_pln_stats.sh: PLN statistics tracking (10 tests)
+  - tests/integration/test_benchmark.sh: Performance benchmarks (6 benchmarks)
+  - tests/integration/run_integration_tests.sh: Test suite runner
+- **CI Pipeline** (COMPLETE)
+  - .github/workflows/ci.yml: Added Integration Tests (Unix/Windows) step
+  - .github/workflows/ci.yml: Added Phase 2E Shell Integration Tests step
+  - All integration tests run on Ubuntu and macOS
 
 See `KERNEL_INTEGRATION_GUIDE.md` for detailed implementation steps.
 
