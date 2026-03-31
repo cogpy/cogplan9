@@ -17,7 +17,10 @@ target_include_directories(plan9cog PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
-target_link_libraries(plan9cog PUBLIC m)
+# Link math library (not needed on MSVC where it is part of the CRT)
+if(NOT MSVC)
+    target_link_libraries(plan9cog PUBLIC m)
+endif()
 
 # ── C++ header-only library ───────────────────────────────────────────────────
 add_library(cog INTERFACE)

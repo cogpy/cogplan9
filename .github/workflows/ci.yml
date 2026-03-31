@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v4
@@ -31,31 +31,66 @@ jobs:
       run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
 
     - name: Build
-      run: cmake --build build
+      run: cmake --build build --config Debug
 
-    - name: Run Unit Tests
+    - name: Run Unit Tests (Unix)
+      if: matrix.os != 'windows-latest'
       run: |
         ./build/tests/unit/test_atomspace
         ./build/tests/unit/test_pln
 
-    - name: Run Comprehensive Unit Tests
+    - name: Run Unit Tests (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        .\build\tests\unit\Debug\test_atomspace.exe
+        .\build\tests\unit\Debug\test_pln.exe
+
+    - name: Run Comprehensive Unit Tests (Unix)
+      if: matrix.os != 'windows-latest'
       run: |
         ./build/tests/unit/test_atomspace_comprehensive
         ./build/tests/unit/test_pln_comprehensive
         ./build/tests/unit/test_edge_cases
         ./build/tests/unit/test_stress
 
-    - name: Run API Tests
+    - name: Run Comprehensive Unit Tests (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        .\build\tests\unit\Debug\test_atomspace_comprehensive.exe
+        .\build\tests\unit\Debug\test_pln_comprehensive.exe
+        .\build\tests\unit\Debug\test_edge_cases.exe
+        .\build\tests\unit\Debug\test_stress.exe
+
+    - name: Run API Tests (Unix)
+      if: matrix.os != 'windows-latest'
       run: ./build/tests/api/test_plan9cog_api
 
+    - name: Run API Tests (Windows)
+      if: matrix.os == 'windows-latest'
+      run: .\build\tests\api\Debug\test_plan9cog_api.exe
+
     - name: Run CLI Tests
+      if: matrix.os != 'windows-latest'
       run: |
         chmod +x tests/cli/test_cogctl.sh
         chmod +x tests/cli/test_cogfs.sh
         ./tests/cli/test_cogctl.sh
         ./tests/cli/test_cogfs.sh
 
+    - name: Run CLI Tests (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: bash
+      run: |
+        bash tests/cli/test_cogctl.sh
+        bash tests/cli/test_cogfs.sh
+
     - name: Run E2E Tests
+      if: matrix.os != 'windows-latest'
       run: |
         chmod +x tests/e2e/test_full_workflow.sh
         ./tests/e2e/test_full_workflow.sh
+
+    - name: Run E2E Tests (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: bash
+      run: bash tests/e2e/test_full_workflow.sh
