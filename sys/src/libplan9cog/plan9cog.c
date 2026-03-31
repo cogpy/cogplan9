@@ -34,8 +34,9 @@ plan9coginit(void)
 	
 	/* Initialize cognitive memory (stub) */
 	p9c->cogmem = nil;
-	
+
 	p9c->initialized = 1;
+	p9c->starttime = nsec();	/* user-space library start time */
 	globalp9c = p9c;
 	
 	return p9c;
@@ -77,16 +78,29 @@ plan9coginstance(void)
 void
 coginfo(Plan9Cog *p9c, CogInfo *info)
 {
+	PlnStats ps;
+
 	if(p9c == nil || info == nil)
 		return;
-	
+
 	memset(info, 0, sizeof(CogInfo));
-	strcpy(info->version, "Plan9Cog 0.1");
-	info->uptime = 0; /* TODO */
+	strcpy(info->version, "Plan9Cog 0.2");
+
+	/* Uptime in seconds since plan9coginit() */
+	if(p9c->starttime > 0)
+		info->uptime = (ulong)((nsec() - p9c->starttime) / 1000000000LL);
+
 	info->natoms = p9c->atomspace ? p9c->atomspace->natoms : 0;
 	info->nrules = p9c->pln ? p9c->pln->nrules : 0;
-	info->ninferences = 0; /* TODO */
-	info->cogmem = 0; /* TODO */
+
+	/* Collect live inference statistics from PLN */
+	if(p9c->pln){
+		plnstats(p9c->pln, &ps);
+		info->ninferences = ps.inferences;
+	}
+
+	/* Rough cognitive memory estimate: atoms * per-atom overhead */
+	info->cogmem = info->natoms * sizeof(ulong) * 8;
 }
 
 void

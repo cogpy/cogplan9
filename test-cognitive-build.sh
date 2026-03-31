@@ -603,6 +603,72 @@ if [ -f "$TEMPORAL_FS" ]; then
     fi
 fi
 
+# ─── Phase 2E: Full Validation ─────────────────────────────────────────────
+
+echo ""
+echo "--- Checking Phase 2E: Full Validation ---"
+
+# coginfo statistics fixes
+PLAN9COG_C="sys/src/libplan9cog/plan9cog.c"
+PLAN9COG_H="sys/include/plan9cog.h"
+
+if [ -f "$PLAN9COG_C" ]; then
+    if grep -q "plnstats" "$PLAN9COG_C"; then
+        log_pass "plan9cog.c: coginfo uses plnstats() for ninferences"
+    else
+        log_fail "plan9cog.c: coginfo does not call plnstats()"
+    fi
+
+    if grep -q "nsec()" "$PLAN9COG_C"; then
+        log_pass "plan9cog.c: uptime computed via nsec()"
+    else
+        log_fail "plan9cog.c: uptime not computed via nsec()"
+    fi
+
+    if ! grep -q "ninferences = 0" "$PLAN9COG_C"; then
+        log_pass "plan9cog.c: ninferences is no longer a stub (0)"
+    else
+        log_warn "plan9cog.c: ninferences may still be stubbed as 0"
+    fi
+fi
+
+if [ -f "$PLAN9COG_H" ]; then
+    if grep -q "starttime" "$PLAN9COG_H"; then
+        log_pass "plan9cog.h: Plan9Cog.starttime field present"
+    else
+        log_fail "plan9cog.h: Plan9Cog.starttime field missing"
+    fi
+fi
+
+# Integration test suite
+INTEG_DIR="tests/integration"
+if [ -d "$INTEG_DIR" ]; then
+    log_pass "tests/integration/ directory exists"
+else
+    log_fail "tests/integration/ directory missing"
+fi
+
+for script in test_coginfo_stats.sh test_atomspace_persistence.sh \
+              test_pln_stats.sh test_benchmark.sh run_integration_tests.sh; do
+    if [ -f "$INTEG_DIR/$script" ]; then
+        log_pass "tests/integration/$script: found"
+    else
+        log_fail "tests/integration/$script: missing"
+    fi
+done
+
+# Run integration tests
+if [ -f "$INTEG_DIR/run_integration_tests.sh" ]; then
+    INTEG_LOG=/tmp/phase2e_integ_$$.log
+    if sh "$INTEG_DIR/run_integration_tests.sh" > "$INTEG_LOG" 2>&1; then
+        log_pass "Phase 2E integration tests: all passing"
+    else
+        log_fail "Phase 2E integration tests: one or more failures"
+        cat "$INTEG_LOG"
+    fi
+    rm -f "$INTEG_LOG"
+fi
+
 echo ""
 echo "=== Build Test Summary ==="
 echo -e "Passed: ${GREEN}$PASS_COUNT${NC}"
