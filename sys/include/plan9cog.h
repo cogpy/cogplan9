@@ -32,6 +32,7 @@ struct Plan9Cog {
 	PlnInference *pln;	/* PLN inference engine */
 	CogMemory *cogmem;	/* Cognitive memory manager */
 	int initialized;	/* Initialization flag */
+	vlong starttime;	/* System start time (nsec) */
 	Lock;			/* System lock */
 };
 
