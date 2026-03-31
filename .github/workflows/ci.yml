@@ -14,7 +14,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
@@ -37,6 +37,13 @@ jobs:
       run: |
         ./build/tests/unit/test_atomspace
         ./build/tests/unit/test_pln
+
+    - name: Run Comprehensive Unit Tests
+      run: |
+        ./build/tests/unit/test_atomspace_comprehensive
+        ./build/tests/unit/test_pln_comprehensive
+        ./build/tests/unit/test_edge_cases
+        ./build/tests/unit/test_stress
 
     - name: Run API Tests
       run: ./build/tests/api/test_plan9cog_api
