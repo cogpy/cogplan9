@@ -16,9 +16,12 @@
 #   Attention    :  80 cycles  (~27 ns)
 #
 # Timing note: `date +%s%3N` (millisecond precision) requires GNU coreutils.
-# On systems without it, the fallback `date +%s` gives second precision and
-# throughput numbers may appear as 0 for fast operations — that is harmless
-# because the correctness assertions are independent of the timing.
+# BSD date (macOS) does not support %N and appends literal characters (e.g.
+# "3N") to the output.  The _ms_now() helper strips non-digit suffixes so
+# arithmetic works on both Linux and macOS.  On systems where millisecond
+# precision is unavailable the fallback gives second precision and throughput
+# numbers may appear as 0 for fast operations — that is harmless because the
+# correctness assertions are independent of the timing.
 
 set -e
 
@@ -33,13 +36,35 @@ WARN()      { printf '  [WARN] %s\n' "$1"; WARN_COUNT=$((WARN_COUNT + 1)); }
 
 # ── Timing helper ─────────────────────────────────────────────────────
 
+# Returns a millisecond-scale integer timestamp for elapsed-time maths.
+#
+# GNU coreutils date (Linux): `date +%s%3N` → 13-digit ms timestamp.
+# BSD date (macOS): `%N` is unsupported; `date +%s%3N` appends the
+#   literal characters "3N", producing e.g. "17749512583N".  After
+#   stripping the non-digit suffix we get "17749512583" — effectively
+#   seconds×10+3.  Elapsed differences therefore appear 10× smaller
+#   than real milliseconds, which makes all throughput checks *pass*
+#   (operations look faster).  Correctness assertions are unaffected.
+# Fallback (no %N support at all): `date +%s` returns whole seconds;
+#   the helper appends "000" so arithmetic stays consistent and
+#   throughput numbers are computed at second-granularity.
+_ms_now() {
+    _t=$(date +%s%3N 2>/dev/null || date +%s)
+    _t=${_t%%[!0-9]*}       # strip non-digit suffix from BSD date output
+    # If result is ≤10 digits it is seconds-only; multiply up to ms scale.
+    if [ ${#_t} -le 10 ]; then
+        _t="${_t}000"
+    fi
+    printf '%s' "$_t"
+}
+
 # Returns elapsed milliseconds for running a shell loop N times
 # Usage: bench_loop <N> <body_as_string>
 bench_loop() {
     N=$1; BODY=$2
-    START=$(date +%s%3N 2>/dev/null || date +%s)
+    START=$(_ms_now)
     eval "i=0; while [ \$i -lt $N ]; do $BODY; i=\$((i+1)); done"
-    END=$(date +%s%3N 2>/dev/null || date +%s)
+    END=$(_ms_now)
     echo $((END - START))
 }
 
@@ -80,7 +105,7 @@ fi
 # ── BM-03: PLN deduction chain (awk-based formula) ───────────────────
 
 TEST_CASE "BM-03: PLN deduction chain (100 steps, awk)"
-START=$(date +%s%3N 2>/dev/null || date +%s)
+START=$(_ms_now)
 awk 'BEGIN {
     s = 1.0; c = 1.0;
     imp_s = 0.9; imp_c = 0.9;
@@ -95,7 +120,7 @@ awk 'BEGIN {
     }
     printf "%.6f %.6f\n", s, c;
 }' > "$WORK/pln_result.txt"
-END=$(date +%s%3N 2>/dev/null || date +%s)
+END=$(_ms_now)
 MS=$((END - START))
 FINAL_S=$(awk '{print $1}' "$WORK/pln_result.txt")
 FINAL_C=$(awk '{print $2}' "$WORK/pln_result.txt")
@@ -110,7 +135,7 @@ fi
 # ── BM-04: ECAN attention update cycle ───────────────────────────────
 
 TEST_CASE "BM-04: ECAN attention update (100 atoms, 10 cycles)"
-START=$(date +%s%3N 2>/dev/null || date +%s)
+START=$(_ms_now)
 awk 'BEGIN {
     n = 100; budget = 1000.0;
     for (i = 0; i < n; i++) sti[i] = budget / n;
@@ -130,7 +155,7 @@ awk 'BEGIN {
     for (i = 0; i < n; i++) total += sti[i];
     printf "%.4f\n", total;
 }' > "$WORK/ecan_result.txt"
-END=$(date +%s%3N 2>/dev/null || date +%s)
+END=$(_ms_now)
 MS=$((END - START))
 TOTAL_STI=$(cat "$WORK/ecan_result.txt")
 STI_OK=$(awk "BEGIN { print ($TOTAL_STI > 0.0) ? 1 : 0 }")
@@ -143,7 +168,7 @@ fi
 # ── BM-05: Export/import I/O roundtrip ───────────────────────────────
 
 TEST_CASE "BM-05: export/import I/O roundtrip (500 atoms)"
-START=$(date +%s%3N 2>/dev/null || date +%s)
+START=$(_ms_now)
 {
     echo "ATOMSPACE 500"
     for i in $(seq 1 500); do
@@ -153,7 +178,7 @@ START=$(date +%s%3N 2>/dev/null || date +%s)
 } > "$WORK/as_500.txt"
 # Simulate import by reading and counting atoms
 IMPORTED=$(grep -c "^NODE" "$WORK/as_500.txt" || echo 0)
-END=$(date +%s%3N 2>/dev/null || date +%s)
+END=$(_ms_now)
 MS=$((END - START))
 if [ "$IMPORTED" -eq 500 ]; then
     PASS "BM-05: 500-atom export/import roundtrip in ${MS}ms"
@@ -165,9 +190,9 @@ fi
 
 TEST_CASE "BM-06: pattern frequency scan (500 atoms)"
 # Count how many atoms have sti >= 40 (simulates pattern mining min-support)
-START=$(date +%s%3N 2>/dev/null || date +%s)
+START=$(_ms_now)
 FREQ=$(grep "^NODE" "$WORK/as_500.txt" | awk '{if ($8 >= 40) count++} END {print count+0}')
-END=$(date +%s%3N 2>/dev/null || date +%s)
+END=$(_ms_now)
 MS=$((END - START))
 if [ "$FREQ" -gt 0 ]; then
     PASS "BM-06: found $FREQ atoms with STI >= 40 in ${MS}ms"
