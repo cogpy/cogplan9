@@ -14,12 +14,11 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-    # Windows sparse checkout: the Plan 9 source tree contains paths with
-    # Windows-reserved names (for example 386/bin/aux/, plus other aux/con/nul
-    # entries) that can make checkout fail before build or test steps run.
-    # Use non-cone sparse checkout so only the explicit C library paths below
-    # are materialized in the worktree on Windows.
-    - name: Checkout (Windows – non-cone sparse checkout)
+    # Windows cannot safely check out this repository with Git because the full
+    # tree contains reserved path components such as 386/bin/aux/. Download the
+    # source archive for the current ref and extract only the C library paths
+    # needed by this workflow.
+    - name: Fetch source subset (Windows)
       if: matrix.os == 'windows-latest'
       uses: actions/checkout@v4
       with:
@@ -40,6 +39,20 @@ jobs:
         GIT_CONFIG_COUNT: 1
         GIT_CONFIG_KEY_0: core.protectNTFS
         GIT_CONFIG_VALUE_0: "false"
+      shell: bash
+      env:
+        SOURCE_REF: ${{ github.event.pull_request.head.sha || github.sha }}
+      run: |
+        set -euo pipefail
+        archive_url="https://codeload.github.com/${GITHUB_REPOSITORY}/tar.gz/${SOURCE_REF}"
+        curl -L --fail -o source.tar.gz "$archive_url"
+        root="$(tar -tzf source.tar.gz | head -n 1 | cut -d/ -f1)"
+        tar -xzf source.tar.gz --strip-components=1 \
+          "$root/CMakeLists.txt" \
+          "$root/src" \
+          "$root/include" \
+          "$root/tests"
+        rm -f source.tar.gz
 
     - name: Checkout (Linux / macOS)
       if: matrix.os != 'windows-latest'
