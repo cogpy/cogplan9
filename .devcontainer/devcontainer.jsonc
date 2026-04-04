@@ -5,16 +5,9 @@
 {
   "name": "Plan9Cog Development",
   
-  // Build configuration - uses our custom Dockerfile
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": ".",
-    "args": {
-      "USERNAME": "vscode",
-      "USER_UID": "1000",
-      "USER_GID": "1000"
-    }
-  },
+  // Use prebuilt image from GitHub Container Registry for fast Codespace startup.
+  // Image is built and pushed by .github/workflows/codespaces.yml on every push to main.
+  "image": "ghcr.io/cogpy/cogplan9/devcontainer:latest",
   
   // DevContainer features to add (common utilities and git)
   "features": {
