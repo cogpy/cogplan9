@@ -27,7 +27,11 @@ jobs:
         set -euo pipefail
         archive_url="https://codeload.github.com/${GITHUB_REPOSITORY}/tar.gz/${SOURCE_REF}"
         curl -L --fail -o source.tar.gz "$archive_url"
+        # Temporarily disable pipefail: head -n 1 exits early causing SIGPIPE
+        # to tar, which would otherwise be treated as a pipeline failure.
+        set +o pipefail
         root="$(tar -tzf source.tar.gz | head -n 1 | cut -d/ -f1)"
+        set -o pipefail
         tar -xzf source.tar.gz --strip-components=1 \
           "$root/CMakeLists.txt" \
           "$root/src" \
